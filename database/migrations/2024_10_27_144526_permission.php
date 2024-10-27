@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('permission', function (Blueprint $table) {
+            $table->id('permission_id')->autoIncrement();
+            $table->string('user_id')->nullable();;
+            $table->string('instance_id')->nullable();
+            $table->string('read')->nullable();
+            $table->string('write')->nullable();
+            $table->string('execute')->nullable();
+            $table->string('restriction')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        //
+    }
+};
