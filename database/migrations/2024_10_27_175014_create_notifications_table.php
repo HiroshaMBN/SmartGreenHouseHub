@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sensor_controller', function (Blueprint $table) {
-            $table->id('sensor_controller_id')->autoIncrement();
-            $table->string('sensor_id')->nullable();
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id('notification_id')->autoIncrement();
             $table->string('instance_id')->nullable();
-            $table->string('name')->nullable();
-            $table->string('display_name')->nullable();
-            $table->string('status')->nullable();
+            $table->string('contact_id')->nullable();;
+            $table->string('user_id')->nullable();;
+            $table->string('message')->nullable();
+            $table->string('Type')->nullable();
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('notifications');
     }
 };

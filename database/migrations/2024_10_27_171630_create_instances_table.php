@@ -13,13 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('contact', function (Blueprint $table) {
-            $table->id('contact_id')->autoIncrement();
-            $table->string('user_id')->nullable();
-            $table->string('instance_id')->nullable();
-            $table->string('mobile')->nullable();
-            $table->string('email')->nullable();
-            $table->string('status')->nullable();
+        Schema::create('instances', function (Blueprint $table) {
+            $table->id('id')->autoIncrement();
+            $table->string('name')->nullable();
+            $table->string('ip')->nullable();
+            $table->string('model')->nullable();
+            $table->string('ssid')->nullable();
+            $table->string('password')->nullable();
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('instances');
     }
 };

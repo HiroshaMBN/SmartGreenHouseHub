@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('permission', function (Blueprint $table) {
+        Schema::create('permissions', function (Blueprint $table) {
             $table->id('permission_id')->autoIncrement();
             $table->string('user_id')->nullable();;
             $table->string('instance_id')->nullable();
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('permissions');
     }
 };
