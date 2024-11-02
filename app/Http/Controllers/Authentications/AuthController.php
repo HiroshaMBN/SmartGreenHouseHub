@@ -3,24 +3,103 @@
 namespace App\Http\Controllers\Authentications;
 
 use App\Http\Controllers\Controller;
+use App\Models\user;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Laravel\Passport\HasApiTokens;
 
 class AuthController extends Controller
 {
     //register users
-    public function userRegister(Request $request){
-        $validator = $request->validate([
-            'name'=> 'required|string',
-            'email' => 'required|email',
-            'password' => 'required|string|min:6|confirmed'
-        ]);
+    public function userRegister(Request $request)
+    {
+        try {
+            $instance_id =1;
+            //user input values validation
+            $validator = Validator::make($request->all(), [
+                'instance_id' =>1,
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6',
+            ]);
+            //validation fails
+            if ($validator->fails()) {
+                return response()->json(['message' => $validator->errors()->all(), 'status' => 406]);
+            }
+            $request['password'] = Hash::make($request['password']);
+            //  $request['remember_token'] = Str::random(10);
+            $user = user::create($request->toArray());
+            $token = $user->createToken('GreenHouseMainAPI')->accessToken;
+            $response = ['token' => $token];
+            return response($response, 200);
+        } catch (Exception $exception) {
+            // Http error code 406 is Not Acceptable error message
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'status' => 406
+            ]);
+        }
+    }
+
+    // Login user function
+    public function LogInUser(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+                'password' => 'required|string|min:6'
+            ]);
+            if ($validator->fails()) {
+                return response()->json(['message' => $validator->errors()->all(), 'status' => 406]);
+                // return response()->json(['message' =>$validator->errors()->all()],422);
+            }
+            $user = User::where('email', $request->email)->first();
+            if ($user) {
+                if (Hash::check($request->password, $user->password)) {
+                    $token = $user->createToken('GreenHouseMainAPI')->accessToken;
+                    $response = ['token' => $token];
 
 
-        // $input = $request->all();
-        // $input['password'] = Hash::make($input['password']);
-        // $user = User::create($input);
-        // $success['token'] = $user->createToken('MY_New_Project')->accessToken;
-        // $success['message'] = "User Registration Successfully!";
-        // return response()->json(['data' => $success], 200);
+                    return response()->json([
+                        "message" => $response,
+                        "userId" => $user->user_id,
+                        "userName" => $user->email,
+                        "status" => 200
+                    ]);
+                } else {
+                    return response()->json(["message" => "Password mismatch", "status" => 422]);
+                }
+            } else {
+                return response(["message" => "user does not exist", "status" => 404]);
+            }
+        } catch (Exception $exception) {
+            // Http error code 406 is Not Acceptable error message
+            return response()->json([
+                "message" => $exception->getMessage(),
+                "status" => 406
+            ]);
+        }
+    }
+
+    //Logout function Not working right now
+    public function LogOut(Request $request)
+    {
+        try {
+
+            $token = $request->user()->token();
+            $token->revoke();
+            return response()->json([
+                "message" => "You have been successfully logged out",
+                "status" => 200
+            ]);
+        } catch (Exception $exception) {
+            return response()->json([
+                "message" => $exception->getMessage(),
+                "status" => 406
+            ]);
+        }
     }
 }
