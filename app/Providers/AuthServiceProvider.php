@@ -26,7 +26,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Passport::ignoreRoutes();
+        // Passport::ignoreRoutes();
 
         // Passport::personalAccessClientId('client-id');
         // Passport::personalAccessClientId('user_id');

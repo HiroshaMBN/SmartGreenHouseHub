@@ -16,15 +16,16 @@ class AuthController extends Controller
     public function userRegister(Request $request)
     {
         try {
-            $instance_id =1;
+            $instance_id = 1;
             //user input values validation
             $validator = Validator::make($request->all(), [
-                'instance_id' =>1,
+                // 'instance_id' => 'integer',
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
             ]);
+            $request['instance_id'] = 1;
             //validation fails
             if ($validator->fails()) {
                 return response()->json(['message' => $validator->errors()->all(), 'status' => 406]);
@@ -61,11 +62,9 @@ class AuthController extends Controller
                 if (Hash::check($request->password, $user->password)) {
                     $token = $user->createToken('GreenHouseMainAPI')->accessToken;
                     $response = ['token' => $token];
-
-
                     return response()->json([
                         "message" => $response,
-                        "userId" => $user->user_id,
+                        "userId" => auth(),
                         "userName" => $user->email,
                         "status" => 200
                     ]);
