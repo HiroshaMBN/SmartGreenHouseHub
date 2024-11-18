@@ -175,6 +175,7 @@ Route::group([
   Route::get('/testmail', [notificationController::class, 'sendNotificationEmailService']);
 
   Route::get('/send_notification_humidity', [notificationController::class, 'sendHumidityNotification']);
+  Route::post('/twilioTest',[notificationController::class,'testSms']);
 
   //activity controller
   Route::get('/error_log', [ActivityController::class, 'errorLogToDB']);
