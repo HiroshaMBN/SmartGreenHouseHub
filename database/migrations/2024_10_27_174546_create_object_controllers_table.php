@@ -13,13 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('notification', function (Blueprint $table) {
-            $table->id('notification_id')->autoIncrement();
+        Schema::create('object_controllers', function (Blueprint $table) {
+            $table->id('object_Controller_id')->autoIncrement();
             $table->string('instance_id')->nullable();
-            $table->string('contact_id')->nullable();;
-            $table->string('user_id')->nullable();;
-            $table->string('message')->nullable();
-            $table->string('Type')->nullable();
+            $table->string('name')->nullable();
+            $table->string('display_name')->nullable();
+            $table->string('status')->nullable();
             $table->timestamps();
         });
     }
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('object_controllers');
     }
 };

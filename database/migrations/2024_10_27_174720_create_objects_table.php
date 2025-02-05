@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('object', function (Blueprint $table) {
+        Schema::create('objects', function (Blueprint $table) {
             $table->id('object_id')->autoIncrement();
             $table->string('object_controller_id')->nullable();;
             $table->string('instance_id')->nullable();
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('objects');
     }
 };

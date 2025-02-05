@@ -13,8 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('object_controller', function (Blueprint $table) {
-            $table->id('object_Controller_id')->autoIncrement();
+        Schema::create('sensor_controllers', function (Blueprint $table) {
+            $table->id('sensor_controller_id')->autoIncrement();
+            $table->string('sensor_id')->nullable();
             $table->string('instance_id')->nullable();
             $table->string('name')->nullable();
             $table->string('display_name')->nullable();
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('sensor_controllers');
     }
 };
