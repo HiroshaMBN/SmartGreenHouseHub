@@ -33,8 +33,14 @@ class AuthController extends Controller
             $request['password'] = Hash::make($request['password']);
             //  $request['remember_token'] = Str::random(10);
             $user = user::create($request->toArray());
+            // $token = $user->createToken('GreenHouseMainAPI')->accessToken;
             $token = $user->createToken('GreenHouseMainAPI')->accessToken;
+            // $token = $user->createToken('GreenHouseMainAPI', ['read-profile', 'read-profile'])->accessToken;
             $response = ['token' => $token];
+            return response()->json([
+                "token" => $response,
+                "message"=>"User created successfully"
+            ]);
             return response($response, 200);
         } catch (Exception $exception) {
             // Http error code 406 is Not Acceptable error message
@@ -63,10 +69,11 @@ class AuthController extends Controller
                     $token = $user->createToken('GreenHouseMainAPI')->accessToken;
                     $response = ['token' => $token];
                     return response()->json([
-                        "message" => $response,
+                        "token" => $response,
                         "userId" => auth(),
                         "userName" => $user->email,
-                        "status" => 200
+                        "status" => 200,
+                        "message"=>"User logged in successfully"
                     ]);
                 } else {
                     return response()->json(["message" => "Password mismatch", "status" => 422]);
@@ -78,6 +85,7 @@ class AuthController extends Controller
             // Http error code 406 is Not Acceptable error message
             return response()->json([
                 "message" => $exception->getMessage(),
+                "line" => $exception->getLine(),
                 "status" => 406
             ]);
         }
