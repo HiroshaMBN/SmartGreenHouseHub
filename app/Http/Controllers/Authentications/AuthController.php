@@ -34,7 +34,7 @@ class AuthController extends Controller
             //  $request['remember_token'] = Str::random(10);
             $user = user::create($request->toArray());
             // $token = $user->createToken('GreenHouseMainAPI')->accessToken;
-            $token = $user->createToken('GreenHouseMainAPI')->accessToken;
+            $token = $user->createToken('GreenHouseMainAPI', ['read-profile'])->accessToken;
             // $token = $user->createToken('GreenHouseMainAPI', ['read-profile', 'read-profile'])->accessToken;
             $response = ['token' => $token];
             return response()->json([
@@ -64,9 +64,17 @@ class AuthController extends Controller
                 // return response()->json(['message' =>$validator->errors()->all()],422);
             }
             $user = User::where('email', $request->email)->first();
+            if($user['is_active'] == 0){
+                return response()->json([
+                    "message" => "User is not active. Please contact the System Admin",
+                    "status" => 406
+                ]);
+                exit();
+            }
+
             if ($user) {
                 if (Hash::check($request->password, $user->password)) {
-                    $token = $user->createToken('GreenHouseMainAPI')->accessToken;
+                    $token = $user->createToken('GreenHouseMainAPI',['read-profile'])->accessToken;
                     $response = ['token' => $token];
                     return response()->json([
                         "token" => $response,

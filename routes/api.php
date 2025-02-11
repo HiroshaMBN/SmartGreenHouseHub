@@ -42,9 +42,10 @@ Route::group([
     //save new sensor
     Route::post('/SaveSensor',[ObjectController::class,'AddNewSensor']);
     //update user profile
-    Route::put('/updateUsers',[UserManageController::class,'updateUserProfile']);
-    // Route::put('/updateUsers',[UserManageController::class,'updateUserProfile'])->middleware('scope:read-profile');
-
+    // Route::put('/updateUsers',[UserManageController::class,'updateUserProfile']);
+    Route::put('/updateUsers',[UserManageController::class,'updateUserProfile'])->middleware('scope:read-profile');
+    Route::put('/userAccountsActivate',[UserManageController::class,'activeUser']);
+    Route::put('/userAccountsDeactivate',[UserManageController::class,'deactivateUser']);
 
 
 
