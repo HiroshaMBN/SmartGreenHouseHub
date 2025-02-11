@@ -7,6 +7,7 @@ use App\Http\Controllers\UserManageControllers\UserManageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Laravel\Passport\Passport;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,16 +23,16 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
-
+// Passport::routes();
 Route::post('/Register',[AuthController::class, 'userRegister']);
-Route::post('/LogIn',[AuthController::class, 'LogInUser']);
+Route::post('/login',[AuthController::class, 'LogInUser'])->name('login');
 // Route::post('/logOut',[AuthController::class, 'LogOut']);
 
-
+// Passport::routes();
 Route::group([
     'as' => 'passport.',
     'prefix' => 'auth',
-    'middleware' => 'api',
+    'middleware' => ['auth:api'],
     'namespace' => '\Laravel\Passport\Http\Controllers',
 ], function () {
     Route::post('/LogOut',[AuthController::class, 'LogOut']);
@@ -40,9 +41,23 @@ Route::group([
     Route::get('/InstanceDetails',[ObjectController::class,'GetInstances']);
     //save new sensor
     Route::post('/SaveSensor',[ObjectController::class,'AddNewSensor']);
+    //update user profile
+    Route::put('/updateUsers',[UserManageController::class,'updateUserProfile']);
+    // Route::put('/updateUsers',[UserManageController::class,'updateUserProfile'])->middleware('scope:read-profile');
 
 
-});
-// ->middleware('auth:api');
 
 
+})->middleware('auth:api');
+
+// Route::put('/updateUsers', [UserManageController::class, 'updateUserProfile'])
+//      ->middleware('auth:api', 'scope:read-profile');
+
+
+// Route::put('/updateUsers', [UserManageController::class, 'updateUserProfile'])
+//      ->middleware('auth:api', 'scope:read-profile');
+
+// Route::middleware('auth:api')->group(function () {
+//     Route::post('/updateUsers', [UserManageController::class, 'updateUserProfile'])->middleware('scope:read-profile');
+//     Route::get('/read-only', [AuthController::class, 'readOnlyAccess'])->middleware('scope:read-only,admin');
+// });
