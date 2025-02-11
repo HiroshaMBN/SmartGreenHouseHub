@@ -6,6 +6,7 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 use Illuminate\Support\Facades\Gate;
 use Laravel\Passport\Passport;
 
+
 class AuthServiceProvider extends ServiceProvider
 {
     /**
@@ -25,12 +26,19 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+        Passport::ignoreRoutes();
+        // Passport::loadKeysFrom(__DIR__.'/../secrets/oauth');
+        // Passport::routes();
+        passport::tokensCan([
+            'read-profile'=>'read user profiles'
+        ]);
 
-        // Passport::ignoreRoutes();
-
+        //
         // Passport::personalAccessClientId('client-id');
         // Passport::personalAccessClientId('user_id');
 
-
+        Passport::tokensExpireIn(now()->addDays(1));
+        Passport::refreshTokensExpireIn(now()->addDays(2));
+        Passport::personalAccessTokensExpireIn(now()->addMonths(1));
     }
 }
