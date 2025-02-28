@@ -11,7 +11,9 @@
         "laravel/framework": "^9.0",
         "laravel/passport": "^11.8",
         "laravel/sanctum": "^2.14",
-        "laravel/tinker": "^2.7"
+        "laravel/tinker": "^2.7",
+        "php-amqplib/rabbitmq-bundle": "^2.17",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "^13.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
