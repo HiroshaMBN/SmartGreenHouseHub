@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\instance;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class InstanceController extends Controller
@@ -21,12 +23,17 @@ class InstanceController extends Controller
             'password' =>'required|string'
         ]);
         if($validator->fails()){
+            Log::channel('custom')->error(Auth::user()->email.':make instance:'.$validator->errors()->all());
+
             return response()->json(["message"=>$validator->errors()->all(),
                                     "status"=>406]);
         }
         instance::create($request->toArray());
+        Log::channel('custom')->info(Auth::user()->email.':make instance:'.'Instance created successfully');
+
         return response()->json(["message"=>"Instance created successfully","status"=>200]);
      }catch(Exception $exception){
+        Log::channel('custom')->error(Auth::user()->email.':make instance:'.$exception->getMessage());
         return response()->json(["message"=>$exception->getMessage(),"status"=>406]);
      }
     }
