@@ -8,7 +8,9 @@ use App\Models\object_controller;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ObjectController extends Controller
 {
@@ -30,8 +32,10 @@ class ObjectController extends Controller
             }
 
             // print_r($instanceArrayData);die();
+            Log::channel('custom')->info(Auth::user() . ' ' . $instanceArrayData);
             return response()->json(["message" => $instanceArrayData, "status" => 200]);
         } catch (Exception $exception) {
+            Log::channel('custom')->error(Auth::user() . ' ' . $exception->getMessage());
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);
         }
     }
@@ -66,7 +70,4 @@ class ObjectController extends Controller
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);
         }
     }
-
-
-
 }
