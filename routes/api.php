@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Authentications\AuthController;
+use App\Http\Controllers\Climate\ClimateController;
 use App\Http\Controllers\Instance\InstanceController;
 use App\Http\Controllers\Objects\ObjectController;
+use App\Http\Controllers\RabbitMq\PassToQController;
 use App\Http\Controllers\UserManageControllers\UserManageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +48,26 @@ Route::group([
     Route::put('/updateUsers',[UserManageController::class,'updateUserProfile'])->middleware('scope:read-profile');
     Route::put('/userAccountsActivate',[UserManageController::class,'activeUser']);
     Route::put('/userAccountsDeactivate',[UserManageController::class,'deactivateUser']);
+
+    //pass data to rabbitMq start
+    //light on
+    Route::get('/turnOnLight',[PassToQController::class,'lightOn']);
+    //light off
+    Route::get('/turnOffLight',[PassToQController::class,'lightOff']);
+    Route::post('/receiveSensorData',[PassToQController::class,'receiveSensorData']);
+
+    //pass data to rabbitMq end
+
+
+    //read temperature values
+    Route::post('/readTemperature',[ClimateController::class,'temperature']);
+    //read humidity values
+    Route::post('/readHumidity',[ClimateController::class,'humidity']);
+    //read both temperature and humidity
+    Route::post('/readTemHumidity',[ClimateController::class,'bothTemHumidity']);
+
+    //get sensor data for testing purpose
+    Route::get('/sensorData',[ClimateController::class,'index']);
 
 
 
