@@ -72,7 +72,21 @@ Route::group([
     //air quality
     Route::get('/mq2AirQuality',[AirConditionStatusController::class,'mq2Co2']);
 
-
+     //RabbitMq intergration
+    //list vhost
+    Route::get('/getVhosts',[RabbitMqConfiguration::class,'ListVHosts']);
+    //make vhost
+    Route::post('/makeHost',[RabbitMqConfiguration::class,'MakeVHost']);
+    //delete v host
+    Route::post('/deleteVHost',[RabbitMqConfiguration::class,'DeleteVhost']);
+    //get rabbitmq users
+    Route::get('/getRabbitMqUsers',[RabbitMqConfiguration::class,'UserList']);
+    //creata a rabbitmq user with password
+    Route::post('/createAUser',[RabbitMqConfiguration::class,'CreateUser']);
+    //add Tags
+    Route::post('/addTags',[RabbitMqConfiguration::class,'AddTags']);
+    //can access virtual host
+    Route::post('/accessVhost',[RabbitMqConfiguration::class,'CanAccessVirtualHosts']);
 
 })->middleware('auth:api');
 
