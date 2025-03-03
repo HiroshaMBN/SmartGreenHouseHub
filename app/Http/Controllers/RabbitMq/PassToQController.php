@@ -33,5 +33,6 @@ class PassToQController extends Controller
 Log::channel('custom')->info(Auth::user()->email.':RabbitMQ data handling:'.'Sensor Data received');
 
     return response()->json(['message' => 'Data received'], 200);
+
 }
 }

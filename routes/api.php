@@ -3,6 +3,7 @@
 use App\Http\Controllers\Authentications\AuthController;
 use App\Http\Controllers\Climate\ClimateController;
 use App\Http\Controllers\Instance\InstanceController;
+use App\Http\Controllers\mq2\AirConditionStatusController;
 use App\Http\Controllers\Objects\ObjectController;
 use App\Http\Controllers\RabbitMq\PassToQController;
 use App\Http\Controllers\UserManageControllers\UserManageController;
@@ -68,6 +69,8 @@ Route::group([
 
     //get sensor data for testing purpose
     Route::get('/sensorData',[ClimateController::class,'index']);
+    //air quality
+    Route::get('/mq2AirQuality',[AirConditionStatusController::class,'mq2Co2']);
 
 
 
