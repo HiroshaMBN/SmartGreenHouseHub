@@ -6,6 +6,9 @@ use App\Http\Controllers\Instance\InstanceController;
 use App\Http\Controllers\mq2\AirConditionStatusController;
 use App\Http\Controllers\Objects\ObjectController;
 use App\Http\Controllers\RabbitMq\PassToQController;
+use App\Http\Controllers\RabbitMq\QueueNexchangeController;
+use App\Http\Controllers\RabbitMq\RabbitMqConfiguration;
+use App\Http\Controllers\SoilMoisture\SoilLevelController;
 use App\Http\Controllers\UserManageControllers\UserManageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -87,6 +90,33 @@ Route::group([
     Route::post('/addTags',[RabbitMqConfiguration::class,'AddTags']);
     //can access virtual host
     Route::post('/accessVhost',[RabbitMqConfiguration::class,'CanAccessVirtualHosts']);
+    //*restart rabbitmq
+    Route::get('/restartRabbitMq',[RabbitMqConfiguration::class,'RestartRabbitMq']);
+    //create a exchnage
+    Route::post('/createExchange',[QueueNexchangeController::class,'MakeExchange']);
+    //create a queue
+    Route::post('/createQueue',[QueueNexchangeController::class,'MakeQueue']);
+    //delete exchange
+    Route::post('/deleteExchange',[QueueNexchangeController::class,'DeleteExchange']);
+
+    //soil moisture sensor data
+    Route::get('/soilLevel',[SoilLevelController::class,'SoilMoistureLevel']);
+
+
+     //Normal delete
+     Route::post('/deleteQueue',[QueueNexchangeController::class,'DeleteQueue']);
+     //delete queue force method request
+     Route::get('/ReqForceDeleteQueue', [QueueNexchangeController::class, 'RequestForceDeleteQueue']);
+     // delete queue force confirmed
+     Route::post('/confirmedDeleteQueue',[QueueNexchangeController::class,'QDeleteConfirmed']);
+     //delete queue if empty
+     // Route::post('/deleteQueue', [QueueMakerController::class, 'ConfirmForceDeleteQueue']);
+
+
+
+
+
+
 
 })->middleware('auth:api');
 

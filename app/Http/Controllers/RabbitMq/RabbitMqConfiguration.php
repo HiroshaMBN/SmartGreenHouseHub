@@ -120,15 +120,16 @@ class RabbitMqConfiguration extends Controller
     }
     // set rabbitmq permissions user's and related host
     //Note : ConfigureRegexp , WriteRegexp , ReadRegexp values should be comes from database (.* is all)
-    public function CanAccessVirtualHosts(Request $request){
-        $validation = Validator::make($request->all(),[
+    public function CanAccessVirtualHosts(Request $request)
+    {
+        $validation = Validator::make($request->all(), [
             "hostName" => "required",
             "userName" => "required",
             "ConfigureRegexp" => "required",
             "WriteRegexp" => "required",
             "ReadRegexp" => "required"
         ]);
-        if($validation->fails()){
+        if ($validation->fails()) {
             return response()->json(["message" => $validation->errors()->all(), "status" => 422]);
         }
         $hostName = escapeshellarg($request->hostName);
@@ -137,8 +138,19 @@ class RabbitMqConfiguration extends Controller
         $WriteRegexp = escapeshellarg($request->WriteRegexp);
         $ReadRegexp = escapeshellarg($request->ReadRegexp);
 
-        $result = shell_exec('sudo rabbitmqctl set_permissions -p ' . $hostName . ' ' . $userName. ' ' . $ConfigureRegexp . ' ' . $WriteRegexp . ' ' . $ReadRegexp);
+        $result = shell_exec('sudo rabbitmqctl set_permissions -p ' . $hostName . ' ' . $userName . ' ' . $ConfigureRegexp . ' ' . $WriteRegexp . ' ' . $ReadRegexp);
         return response()->json(["message" => $result, "status" => 200]);
     }
 
+    // // restart rabbitmq server
+    public function RestartRabbitMq()
+    {
+        $output = shell_exec('sudo service rabbitmq-server restart');
+        var_dump($output);
+        if ($output == NULL) {
+            return response()->json(['message' => 'RabbitMq server restarted'], 200);
+        } else {
+            return response()->json(['message' => 'RabbitMq server restart failed'], 406);
+        }
+    }
 }

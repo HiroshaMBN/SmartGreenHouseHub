@@ -10,7 +10,7 @@ class AirConditionStatusController extends Controller
 {
     //read air quality
     public function mq2Co2(){
-        return response()->json(airCondition::all());
+        // return response()->json(airCondition::all());
 
     }
 }
