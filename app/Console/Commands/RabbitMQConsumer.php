@@ -28,9 +28,11 @@ class RabbitMQConsumer extends Command
 
         $channel = $connection->channel();
         //dht11 queue
-        $channel->queue_declare('dht11_queue', false, true, false, false);
+        $channel->queue_declare('sensor/dht11', false, true, false, false);
         //mq2 queue
-        $channel->queue_declare('mq2', false, true, false, false);
+        $channel->queue_declare('sensor/mq2', false, true, false, false);
+        //soil moisture queue
+        $channel->queue_declare('sensor/soil',false,true,false,false);
 
 
         // echo " [*] Waiting for messages. To exit press CTRL+C\n";
@@ -56,8 +58,17 @@ class RabbitMQConsumer extends Command
             ]);
         };
 
+        $callback3 = function($msg3){
+            $data3 = json_decode($msg3->body, true);
+            \App\Models\soilMoisture::create([
+                'Level' => $data3['Level'],
+                'status' => $data3['status']
+            ]);
+        };
+
         $channel->basic_consume('dht11_queue', '', false, true, false, false, $callback);
-        $channel->basic_consume('mq2', '', false, true, false, false, $callback2);
+        $channel->basic_consume('sensor/mq2', '', false, true, false, false, $callback2);
+        $channel->basic_consume('sensor/soil','',false,true,false,false,$callback3);
 
         while ($channel->is_consuming()) {
             $channel->wait();
