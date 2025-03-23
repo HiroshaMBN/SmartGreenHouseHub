@@ -2,13 +2,17 @@
 
 use App\Http\Controllers\Authentications\AuthController;
 use App\Http\Controllers\Climate\ClimateController;
+use App\Http\Controllers\Contact\ContactController;
 use App\Http\Controllers\Instance\InstanceController;
 use App\Http\Controllers\mq2\AirConditionStatusController;
+use App\Http\Controllers\Notification\notificationController;
 use App\Http\Controllers\Objects\ObjectController;
 use App\Http\Controllers\RabbitMq\PassToQController;
 use App\Http\Controllers\RabbitMq\QueueNexchangeController;
 use App\Http\Controllers\RabbitMq\RabbitMqConfiguration;
 use App\Http\Controllers\SoilMoisture\SoilLevelController;
+use App\Http\Controllers\Stocks\StocksController;
+use App\Http\Controllers\Thresholds\thresholdsController;
 use App\Http\Controllers\UserManageControllers\UserManageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +63,7 @@ Route::group([
     //light off
     Route::get('/turnOffLight',[PassToQController::class,'lightOff']);
     Route::post('/receiveSensorData',[PassToQController::class,'receiveSensorData']);
-
+    
     //pass data to rabbitMq end
 
 
@@ -70,10 +74,14 @@ Route::group([
     //read both temperature and humidity
     Route::post('/readTemHumidity',[ClimateController::class,'bothTemHumidity']);
 
+    //highest humidity in a month
+    Route::post('/maxHumidity',[ClimateController::class,'highestNumberOFHumidityRecord']);
+    // 
+
     //get sensor data for testing purpose
     Route::get('/sensorData',[ClimateController::class,'index']);
     //air quality
-    Route::get('/mq2AirQuality',[AirConditionStatusController::class,'mq2Co2']);
+    Route::post('/mq2AirQuality',[AirConditionStatusController::class,'mq2Co2']);
 
      //RabbitMq intergration
     //list vhost
@@ -112,11 +120,26 @@ Route::group([
      //delete queue if empty
      // Route::post('/deleteQueue', [QueueMakerController::class, 'ConfirmForceDeleteQueue']);
 
+    //get sensor names
+    Route::get('/sensor_name',[thresholdsController::class,'getSensors']);
+     //add thresholds valuee
+    Route::post('/SetThresholds',[thresholdsController::class,'SensorThresholds']);
 
+    //get temperature thresholds values
+    Route::get('/temperature_threshold',[thresholdsController::class,'temperatureThreshold']);
 
+    //notification
+    Route::get('/tmp_alert',[notificationController::class,'temperatureAlert']);
+    //enable whole notification at once 
+    Route::post('/enable_notifications',[notificationController::class,'enableNotifications']);
+    //get register's users list for the set contact
+    Route::get('reg_users' ,[ContactController::class,'userList']);
+    //update contact table
+    Route::post('/update_contact',[ContactController::class,'addUserContact']);
 
-
-
+    //stocks
+    Route::post('/add_fertilization_stocks',[StocksController::class,'fertilizationStocks']);
+    Route::post('/add_seeds_stocks',[StocksController::class,'seedStocks']);
 
 })->middleware('auth:api');
 

@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class thresholds extends Model
+{
+    use HasFactory;
+    protected $fillable = ['sensor_name', 'normal','warning','critical','is_enable_notify'];
+
+}

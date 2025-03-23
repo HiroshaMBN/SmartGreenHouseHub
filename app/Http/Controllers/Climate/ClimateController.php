@@ -133,6 +133,22 @@ class ClimateController extends Controller
         }
     }
 
+    //in a monthly
+    public function highestNumberOFHumidityRecord(){
+//         SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, MAX(humidity) as maximum_humidity
+// FROM climates
+// GROUP BY month
+// ORDER BY month;
+    
+        // $tempHumidity = Climate::where('created_at', 'LIKE', "%$date%")->get();
+        $humidityResult = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m') AS month, MAX(humidity) as max_humidity")
+        ->groupBy('month')->orderBy('month')->get();
+        return $humidityResult;
+
+    }
+
+
+
 
 
     //get sensor data

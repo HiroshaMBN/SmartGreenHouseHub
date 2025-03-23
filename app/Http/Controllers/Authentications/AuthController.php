@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Authentications;
 
 use App\Http\Controllers\Controller;
 use App\Models\contact;
-use App\Models\user;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +26,7 @@ class AuthController extends Controller
                 'last_name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
-                'mobile' => 'string|max:255',
+                'mobile' => 'string|min:10',
             ]);
             $request['instance_id'] = 1;
             //validation fails
@@ -37,7 +37,7 @@ class AuthController extends Controller
             //  $request['remember_token'] = Str::random(10);
             $contact = contact::created($request->toArray());
 
-            $user = user::create($request->toArray());
+            $user = User::create($request->toArray());
             // $token = $user->createToken('GreenHouseMainAPI')->accessToken;
             $token = $user->createToken('GreenHouseMainAPI', ['read-profile'])->accessToken;
             // $token = $user->createToken('GreenHouseMainAPI', ['read-profile', 'read-profile'])->accessToken;
@@ -51,7 +51,7 @@ class AuthController extends Controller
             return response($response, 200);
         } catch (Exception $exception) {
             // Http error code 406 is Not Acceptable error message
-            Log::channel('custom')->error($user->email.':user registration:'. $exception->getMessage());
+            // Log::channel('custom')->error($user->email.':user registration:'. $exception->getMessage());
 
             return response()->json([
                 'message' => $exception->getMessage(),
