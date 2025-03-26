@@ -8,6 +8,7 @@ use App\Http\Controllers\mq2\AirConditionStatusController;
 use App\Http\Controllers\Notification\notificationController;
 use App\Http\Controllers\Objects\ObjectController;
 use App\Http\Controllers\RabbitMq\PassToQController;
+use App\Http\Controllers\RabbitMq\PublishToMessageToNodemcu;
 use App\Http\Controllers\RabbitMq\QueueNexchangeController;
 use App\Http\Controllers\RabbitMq\RabbitMqConfiguration;
 use App\Http\Controllers\SoilMoisture\SoilLevelController;
@@ -140,6 +141,10 @@ Route::group([
     //stocks
     Route::post('/add_fertilization_stocks',[StocksController::class,'fertilizationStocks']);
     Route::post('/add_seeds_stocks',[StocksController::class,'seedStocks']);
+
+    //publish message
+    Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
+    Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);
 
 })->middleware('auth:api');
 
