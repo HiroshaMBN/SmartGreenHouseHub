@@ -38,7 +38,7 @@ class QueueNexchangeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'queue_name' => 'required|string',
-            'durable' => 'required',
+            'durable' => 'required', //true = durable or false
         ]);
 
         if ($validator->fails()) {
