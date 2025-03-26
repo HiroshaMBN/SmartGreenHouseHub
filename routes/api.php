@@ -145,6 +145,7 @@ Route::group([
     //publish message
     Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
     Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);
+    Route::post('/publish_on_off_exhaust_fan',[PublishToMessageToNodemcu::class,'exhaustFan']);
 
 })->middleware('auth:api');
 
