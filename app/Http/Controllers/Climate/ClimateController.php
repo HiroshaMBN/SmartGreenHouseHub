@@ -29,7 +29,18 @@ class ClimateController extends Controller
             //% is required both date and time
             if ($type == "%") {
                 $dateAndTime = $date . ' ' . $time;
-                $readTemperature = Climate::where('created_at', 'LIKE', "%$dateAndTime%")->get();
+                // $readTemperature = Climate::where('created_at', 'LIKE', "%$dateAndTime%")->get();
+                // $readTemperature = Climate::selectRaw("AVG(temperature) as temperature,DATE_FORMAT(created_at,'%Y-%m-%d')")
+                // ->where('created_at','LIKE',"%$dateAndTime%")
+                // ->groupBy('day')->orderBy('day')->get();
+
+                $readTemperature = Climate::selectRaw("ROUND(AVG(temperature),2) as temperature, DATE_FORMAT(created_at, '%Y-%m-%d') as day")
+                ->where('created_at', 'LIKE', "%$dateAndTime%")
+                ->groupBy('day')  // Grouping by the alias 'day'
+                ->orderBy('day')  // Ordering by 'day'
+                 ->get();
+
+
             } else {
                 $readTemperature = Climate::where('created_at', 'LIKE', "%$date%")->get();
             }
@@ -134,17 +145,17 @@ class ClimateController extends Controller
     }
 
     //in a monthly
-    public function highestNumberOFHumidityRecord(){
-//         SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, MAX(humidity) as maximum_humidity
-// FROM climates
-// GROUP BY month
-// ORDER BY month;
-    
+    public function highestNumberOFHumidityRecord()
+    {
+        //         SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, MAX(humidity) as maximum_humidity
+        // FROM climates
+        // GROUP BY month
+        // ORDER BY month;
+
         // $tempHumidity = Climate::where('created_at', 'LIKE', "%$date%")->get();
         $humidityResult = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m') AS month, MAX(humidity) as max_humidity")
-        ->groupBy('month')->orderBy('month')->get();
+            ->groupBy('month')->orderBy('month')->get();
         return $humidityResult;
-
     }
 
 
@@ -152,7 +163,8 @@ class ClimateController extends Controller
 
 
     //get sensor data
-    public function index(){
+    public function index()
+    {
         return response()->json(Climate::all());
     }
 }

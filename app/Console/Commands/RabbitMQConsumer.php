@@ -6,6 +6,8 @@ use Exception;
 use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use App\Events\SensorDataUpdated;
+use Illuminate\Support\Facades\Log;
 
 class RabbitMQConsumer extends Command
 {
@@ -50,13 +52,25 @@ class RabbitMQConsumer extends Command
       // echo " [*] Waiting for messages. To exit press CTRL+C\n";
       $callback = function ($msg) {
         // echo ' [x] Received ', $msg->body, "\n";
-
         $data = json_decode($msg->body, true);
+        // broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
+
+        if (isset($data['temperature']) && isset($data['humidity'])) {
+          // Broadcast the event with temperature and humidity data
+          // broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
+          broadcast(new SensorDataUpdated($msg->body ));
+      } else {
+          Log::error('Invalid data received from RabbitMQ: ' . $msg->body);
+      }
+
+
 
         \App\Models\Climate::create([
           'temperature' => $data['temperature'],
           'humidity' => $data['humidity'],
         ]);
+        echo "Update climate";
+        // broadcast(new \App\Events\SensorDataReceived($msg->body ));
       };
 
 
@@ -67,6 +81,8 @@ class RabbitMQConsumer extends Command
           'value' => $data2['Value'],
           'status' => $data2['status']
         ]);
+        echo "Update mq2";
+
       };
 
       $callback3 = function ($msg3) {
@@ -75,6 +91,7 @@ class RabbitMQConsumer extends Command
           'Level' => $data3['Level'],
           'status' => $data3['status']
         ]);
+        echo "Update soil";
       };
 
       $callback4 = function (AMQPMessage $msg) {
