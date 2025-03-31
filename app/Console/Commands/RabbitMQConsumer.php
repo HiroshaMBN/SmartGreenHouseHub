@@ -25,16 +25,16 @@ class RabbitMQConsumer extends Command
   {
     try {
       $connection = new AMQPStreamConnection(
-        // env('RABBITMQ_HOST'),
-        // env('RABBITMQ_PORT'),
-        // env('RABBITMQ_USERNAME'),
-        // env('RABBITMQ_PASSWORD'),
-        // env('RABBITMQ_VHOST')
-        '10.128.1.52',
-        5672,
-        'guest',
-        'guest',
-        '/'
+        env('RABBITMQ_HOST'),
+        env('RABBITMQ_PORT'),
+        env('RABBITMQ_USERNAME'),
+        env('RABBITMQ_PASSWORD'),
+        env('RABBITMQ_VHOST')
+        // '192.168.8.104',
+        // 5672,
+        // 'guest',
+        // 'guest',
+        // '/'
       );
 
       $channel = $connection->channel();
@@ -57,9 +57,11 @@ class RabbitMQConsumer extends Command
 
         if (isset($data['temperature']) && isset($data['humidity'])) {
           // Broadcast the event with temperature and humidity data
-          // broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
-          broadcast(new SensorDataUpdated($msg->body ));
+          broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
+          // broadcast(new SensorDataUpdated($msg->body ));
       } else {
+        echo $data['temperature'];
+        echo $data['humidity'];
           Log::error('Invalid data received from RabbitMQ: ' . $msg->body);
       }
 

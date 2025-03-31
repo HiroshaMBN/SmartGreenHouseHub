@@ -109,7 +109,7 @@ Route::group([
     Route::post('/deleteExchange',[QueueNexchangeController::class,'DeleteExchange']);
 
     //soil moisture sensor data
-    Route::get('/soilLevel',[SoilLevelController::class,'SoilMoistureLevel']);
+    Route::post('/soilLevel',[SoilLevelController::class,'SoilMoistureLevel']);
 
 
      //Normal delete
@@ -120,7 +120,8 @@ Route::group([
      Route::post('/confirmedDeleteQueue',[QueueNexchangeController::class,'QDeleteConfirmed']);
      //delete queue if empty
      // Route::post('/deleteQueue', [QueueMakerController::class, 'ConfirmForceDeleteQueue']);
-
+    //add sensor
+    Route::post('/add_senors',[thresholdsController::class,'AddSensors']);
     //get sensor names
     Route::get('/sensor_name',[thresholdsController::class,'getSensors']);
      //add thresholds valuee
