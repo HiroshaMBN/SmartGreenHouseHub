@@ -34,11 +34,16 @@ class ClimateController extends Controller
                 // ->where('created_at','LIKE',"%$dateAndTime%")
                 // ->groupBy('day')->orderBy('day')->get();
 
-                $readTemperature = Climate::selectRaw("ROUND(AVG(temperature),2) as temperature, DATE_FORMAT(created_at, '%Y-%m-%d') as day")
-                ->where('created_at', 'LIKE', "%$dateAndTime%")
-                ->groupBy('day')  // Grouping by the alias 'day'
-                ->orderBy('day')  // Ordering by 'day'
-                 ->get();
+                // $readTemperature = Climate::selectRaw("ROUND(AVG(temperature),2) as temperature, DATE_FORMAT(created_at, '%Y-%m-%d') as day")
+                // ->where('created_at', 'LIKE', "%$dateAndTime%")
+                // ->groupBy('day')  // Grouping by the alias 'day'
+                // ->orderBy('day')  // Ordering by 'day'
+                //  ->get();
+
+                $readTemperature = Climate::selectRaw('DATE(created_at) as day, ROUND(AVG(temperature),2) as temperature')
+                ->groupBy('day')
+                ->get();
+                
 
 
             } else {
