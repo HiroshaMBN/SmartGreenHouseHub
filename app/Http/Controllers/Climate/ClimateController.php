@@ -18,43 +18,23 @@ class ClimateController extends Controller
 
     public function temperature(Request $request)
     {
-
         try {
             $type = $request->type;
             $date = $request->date;
             $time = $request->time;
-
-            // $readTemperature = Climate::all();
-            // $readTemperature = Climate::where('created_at',$date)->get();
-            //% is required both date and time
             if ($type == "%") {
                 $dateAndTime = $date . ' ' . $time;
-                // $readTemperature = Climate::where('created_at', 'LIKE', "%$dateAndTime%")->get();
-                // $readTemperature = Climate::selectRaw("AVG(temperature) as temperature,DATE_FORMAT(created_at,'%Y-%m-%d')")
-                // ->where('created_at','LIKE',"%$dateAndTime%")
-                // ->groupBy('day')->orderBy('day')->get();
-
-                // $readTemperature = Climate::selectRaw("ROUND(AVG(temperature),2) as temperature, DATE_FORMAT(created_at, '%Y-%m-%d') as day")
-                // ->where('created_at', 'LIKE', "%$dateAndTime%")
-                // ->groupBy('day')  // Grouping by the alias 'day'
-                // ->orderBy('day')  // Ordering by 'day'
-                //  ->get();
-
-                $readTemperature = Climate::selectRaw('DATE(created_at) as day, ROUND(AVG(temperature),2) as temperature')
-                ->groupBy('day')
-                ->get();
-                
-
-
+                $readTemperature = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(temperature),2) as temperature")
+                    ->groupBy('day')
+                    ->get();
             } else {
                 $readTemperature = Climate::where('created_at', 'LIKE', "%$date%")->get();
             }
             $temperature = array();
             foreach ($readTemperature as $result) {
-                // array_push($temperature, $result->temperature, $result->created_at);
                 $temperatureData = [
                     "temperature" => $result->temperature,
-                    "created_at" => Carbon::parse($result->created_at)->format('Y-m-d H:i:s')
+                    "created_at" => $result->day
                 ];
                 array_push($temperature, $temperatureData);
             }
@@ -63,13 +43,11 @@ class ClimateController extends Controller
                 return response()->json(['message' => 'No temperature data found'], 404);
             }
             Log::channel('custom')->info(Auth::user()->email . ':Reading Temperature:' . 'Reading Historical Temperature');
-
             return $temperature;
         } catch (Exception $exception) {
             Log::channel('custom')->error(Auth::user()->email . ':Reading Temperature:' . $exception->getMessage());
         }
     }
-
     //read humidity
     public function humidity(Request $request)
     {

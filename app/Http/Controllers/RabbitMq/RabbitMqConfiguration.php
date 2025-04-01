@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 class RabbitMqConfiguration extends Controller
 {
 
@@ -146,11 +147,42 @@ class RabbitMqConfiguration extends Controller
     public function RestartRabbitMq()
     {
         $output = shell_exec('sudo service rabbitmq-server restart');
-        var_dump($output);
+        // var_dump($output);
         if ($output == NULL) {
             return response()->json(['message' => 'RabbitMq server restarted'], 200);
         } else {
             return response()->json(['message' => 'RabbitMq server restart failed'], 406);
         }
+    }
+    public function overView(){
+        $output = shell_exec("rabbitmqctl status --formatter=json");
+        if($output == NULL){
+            return response()->json(['message' => 'RabbitMq server restart failed'], 406);
+        }else{
+            $VHostList = json_decode($output, true);
+            return $listeners = $VHostList['listeners'] ?? [];
+            // return response()->json(["message"=>$VHostList]);
+        }
+    }
+
+    public function showConnection(){
+      $output = shell_exec("rabbitmq-diagnostics list_connections ");
+      // $json_output = json_encode($output, true);
+      return $output;
+    }
+
+    public function Terminal(Request $request){
+      $command = $request->query('cmd');
+      // $allowedCommands = ['ls', 'uptime', 'df -h', 'whoami','date','systemctl status rabbitmq-server.service'];
+    //   if (!in_array($command, $allowedCommands)) {
+    //     return response()->json(['error' => 'Command not allowed.Contact System Administrator'], 403);
+    // }
+    $process = new Process([$command]);
+    $process->run();
+    if (!$process->isSuccessful()) {
+      return response()->json(['error' => $process->getErrorOutput()], 500);
+  }
+
+  return response()->json(['output' => $process->getOutput()]);
     }
 }

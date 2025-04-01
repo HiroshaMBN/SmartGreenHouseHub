@@ -110,6 +110,13 @@ Route::group([
 
     //soil moisture sensor data
     Route::post('/soilLevel',[SoilLevelController::class,'SoilMoistureLevel']);
+    
+    //rabbitmq overview
+    Route::get('/rabbitmq_overview',[RabbitMqConfiguration::class,'overView']);
+    //rabbitmq connection list
+    // 
+    Route::get('/rabbitmq_connections',[RabbitMqConfiguration::class,'showConnection']);
+
 
 
      //Normal delete
@@ -147,6 +154,10 @@ Route::group([
     Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
     Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);
     Route::post('/publish_on_off_exhaust_fan',[PublishToMessageToNodemcu::class,'exhaustFan']);
+
+    //run command in terminal
+
+    Route::get('/terminal',[RabbitMqConfiguration::class,'Terminal']);
 
 })->middleware('auth:api');
 
