@@ -9,7 +9,8 @@ use App\Models\notificationActivation;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 class notificationController extends Controller
 {
   //alert for temperature
@@ -34,6 +35,7 @@ class notificationController extends Controller
         if ($is_notify == 0) { //turn on / off all notification at once , if 1 send related notifications to users
           return response()->json(["message" => "Temperature Notifications turn off"]);
         }
+
         if ($result->temperature <= $normal) { //normal
           $data = [
             "status" => "Normal",

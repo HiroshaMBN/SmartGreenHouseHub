@@ -77,6 +77,8 @@ Route::group([
 
     //highest humidity in a month
     Route::post('/maxHumidity',[ClimateController::class,'highestNumberOFHumidityRecord']);
+    //highest Temperature in a month
+    Route::post('/maxTemperature',[ClimateController::class,'highestNumberOFTemperatureRecord']);
     // 
 
     //get sensor data for testing purpose
@@ -149,7 +151,8 @@ Route::group([
     //stocks
     Route::post('/add_fertilization_stocks',[StocksController::class,'fertilizationStocks']);
     Route::post('/add_seeds_stocks',[StocksController::class,'seedStocks']);
-
+    Route::get('/show_fertilization_stocks',[StocksController::class,'showFertilizationStocks']);
+    Route::get('/show_seeds_stocks',[StocksController::class,'showSeedStocks']);
     //publish message
     Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
     Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);

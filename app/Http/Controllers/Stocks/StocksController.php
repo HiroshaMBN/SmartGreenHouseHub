@@ -9,7 +9,6 @@ use Exception;
 use App\Models\fertilization;
 use App\Models\seeds;
 
-
 class StocksController extends Controller
 {
     //fertilization stock get insert
@@ -87,5 +86,17 @@ class StocksController extends Controller
             "unitPrice" => "",
             "stockLevel" => "string"
         ]);
+    }
+
+
+     //show fertilization stocks
+    public function showFertilizationStocks(){
+        $result = fertilization::all();
+        return $result;
+    }
+    //show seeds stocks
+    public function showSeedStocks(){
+        $result = seeds::all();
+        return $result;
     }
 }
