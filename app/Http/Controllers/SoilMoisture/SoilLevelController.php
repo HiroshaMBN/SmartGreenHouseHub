@@ -25,18 +25,24 @@ class SoilLevelController extends Controller
       //     FROM soil_moistures
       //     GROUP BY DATE(created_at)  
       // ) AS avg_values;
+      // Log::channel('custom')->info(Auth::user()->email . ':climate:' . 'User request all temperature data');
+      $readTemperature = soilMoisture::selectRaw("ROUND(AVG(Level),2) AS level,DATE_FORMAT(created_at, '%Y-%m-%d') as day")
+          ->groupBy('day')
+          ->get();
+
+      // $readTemperature = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(temperature), 2) as temperature")
+      // ->whereBetween('created_at', [$start, $end])
+      // ->groupBy('day')
+      // ->get();
 
 
+      // $readSoilLevel = soilMoisture::selectRaw('ROUND(AVG(Level), 2) AS level, MAX(Level) as maxAvg ,DATE(created_at) AS day')
+      //   ->where('created_at', 'LIKE', '%2025-03%')
+      //   ->groupByRaw('DATE(created_at)')
+      //   ->orderBy('created_date', 'asc')
+      //   ->get();
 
-
-
-      $readSoilLevel = soilMoisture::selectRaw('ROUND(AVG(Level), 2) AS level, MAX(Level) as maxAvg ,DATE(created_at) AS created_date')
-        ->where('created_at', 'LIKE', '%2025-03%')
-        ->groupByRaw('DATE(created_at)')
-        ->orderBy('created_date', 'asc')
-        ->get();
-
-      return $readSoilLevel;
+      return $readTemperature;
 
 
       // SELECT ROUND(AVG(Level), 2) AS level, DATE(created_at) AS created_date FROM `soil_moistures`

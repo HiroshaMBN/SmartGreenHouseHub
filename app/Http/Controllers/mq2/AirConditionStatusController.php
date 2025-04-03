@@ -7,49 +7,45 @@ use App\Models\airCondition;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class AirConditionStatusController extends Controller
 {
-    //read air quality
-    public function mq2Co2(Request $request){
+  //read air quality
+  public function mq2Co2(Request $request)
+  {
 
-      try{
-        // SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS day , AVG(value) FROM air_conditions GROUP BY day ORDER BY day;
-        $airQualityData = airCondition::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') AS day , AVG(value) as value")
-        ->groupBy('day')->orderBy('day')->get();
-        return $airQualityData;
-      }catch(Exception $exception){
-        return response()->json(['message' => $exception->getMessage()], 500);  
+    try {
+      $type = $request->type;
+      $start = $request->startDate;
+      $end = $request->endDate;
+      $time = $request->time;
+      $airQuality = array();
+
+      if ($type == "%") {
+        $airQualityData = airCondition::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') AS day , ROUND(AVG(value),2) as value")
+          ->groupBy('day')->orderBy('day')->get();
+        Log::channel('custom')->info(Auth::user()->email . ':airQuality:' . 'User request all air quality data');
+      } else {
+        Log::channel('custom')->info(Auth::user()->email . ':airQuality:' . 'User request in between' . $start . ' and ' . $end . ' air quality data');
+        $airQualityData = airCondition::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(value),2) as value")
+          ->whereBetween('created_at', [$start, $end])
+          ->groupBy('day')
+          ->get();
       }
-
-      // $airQuality = array();
-      // $result = airCondition::all();
-      // foreach ($result as $value) {
-// SELECT  DATE_FORMAT(created_at, '%Y-%m') AS month , AVG(value) 
-// FROM air_conditions
-// GROUP BY month
-// ORDER BY month;
-
-// $humidityResult = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m') AS month, MAX(humidity) as max_humidity")
-// ->groupBy('month')->orderBy('month')->get();
-// return $humidityResult;
-
-
-
-
-
-
-
-
-
-
-      //   $airQualityData = [
-      //     "value" => $value->value,
-      //     "created_at" => Carbon::parse($value->created_at)->format('Y-m-d H:i:s')
-      //   ];
-      //   array_push($airQuality, $airQualityData);
-      // }
-
-
+      foreach ($airQualityData as $result) {
+        $data = [
+          "value" => $result->value,
+          "day" => $result->day
+        ];
+        array_push($airQuality, $data);
+      }
+      Log::channel('custom')->info(Auth::user()->email . ':airQuality:' . 'Reading historical air quality data successfully');
+      return $airQuality;
+    } catch (Exception $exception) {
+      Log::channel('custom')->info(Auth::user()->email . ':airQuality:' . $exception->getMessage());
+      return response()->json(['message' => $exception->getMessage()], 500);
     }
+  }
 }

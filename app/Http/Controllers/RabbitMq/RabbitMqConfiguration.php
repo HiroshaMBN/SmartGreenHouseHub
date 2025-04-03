@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 class RabbitMqConfiguration extends Controller
 {
 
@@ -155,13 +157,14 @@ class RabbitMqConfiguration extends Controller
         }
     }
     public function overView(){
-        $output = shell_exec("rabbitmqctl status --formatter=json");
+      return  $output = shell_exec("rabbitmqctl status --formatter=json");
         if($output == NULL){
             return response()->json(['message' => 'RabbitMq server restart failed'], 406);
         }else{
-            $VHostList = json_decode($output, true);
-            return $listeners = $VHostList['listeners'] ?? [];
-            // return response()->json(["message"=>$VHostList]);
+            var_dump($output);die();
+          return  $VHostList = json_decode($output, true);
+            $listeners = $VHostList['listeners'] ?? [];
+            return response()->json(["message"=>$listeners]);
         }
     }
 

@@ -32,10 +32,10 @@ class ObjectController extends Controller
             }
 
             // print_r($instanceArrayData);die();
-            Log::channel('custom')->info(Auth::user() . ' ' . $instanceArrayData);
+            Log::channel('custom')->info(Auth::user() . 'object' . "Get available instances");
             return response()->json(["message" => $instanceArrayData, "status" => 200]);
         } catch (Exception $exception) {
-            Log::channel('custom')->error(Auth::user() . ' ' . $exception->getMessage());
+            Log::channel('custom')->error(Auth::user() . 'object' . $exception->getMessage());
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);
         }
     }
@@ -44,8 +44,6 @@ class ObjectController extends Controller
     public function AddNewSensor(Request $request)
     {
         try {
-
-
 
             $validator = Validator::make($request->all(), [
                 'instanceName' => 'required|integer',
@@ -56,15 +54,13 @@ class ObjectController extends Controller
 
 
             if ($validator->fails()) {
+            Log::channel('custom')->info(Auth::user() . 'object' . $validator->errors()->all());
                 return response()->json(["message" => $validator->errors()->all(), "status" => 406]);
             }
             $instanceName = $validator['instanceName'];
-            var_dump(123443);
             $instance = DB::table('instances')->select('id')->where('name', $validator["instanceName"])->get();
             $saveSensor = object_controller::create($request->array());
-
-
-
+            Log::channel('custom')->info(Auth::user() . 'object' . $request->sensorTechnicalName."Sensor added successfully");
             return response()->json(["message" => "Sensor added successfully", "status" => 200]);
         } catch (Exception $exception) {
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);

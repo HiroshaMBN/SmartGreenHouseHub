@@ -31,19 +31,18 @@ class AuthController extends Controller
             $request['instance_id'] = 1;
             //validation fails
             if ($validator->fails()) {
+            Log::channel('custom')->info($request->email.':user registration:'.$validator->errors()->all());
                 return response()->json(['message' => $validator->errors()->all(), 'status' => 406]);
             }
             $request['password'] = Hash::make($request['password']);
             //  $request['remember_token'] = Str::random(10);
             $contact = contact::created($request->toArray());
-
             $user = User::create($request->toArray());
             // $token = $user->createToken('GreenHouseMainAPI')->accessToken;
             $token = $user->createToken('GreenHouseMainAPI', ['read-profile'])->accessToken;
             // $token = $user->createToken('GreenHouseMainAPI', ['read-profile', 'read-profile'])->accessToken;
             $response = ['token' => $token];
             Log::channel('custom')->info($user->email.':user registration:'.'User logged in successfully');
-
             return response()->json([
                 "token" => $response,
                 "message"=>"User created successfully"
@@ -51,8 +50,7 @@ class AuthController extends Controller
             return response($response, 200);
         } catch (Exception $exception) {
             // Http error code 406 is Not Acceptable error message
-            // Log::channel('custom')->error($user->email.':user registration:'. $exception->getMessage());
-
+            Log::channel('custom')->error($user->email.':user registration:'. $exception->getMessage());
             return response()->json([
                 'message' => $exception->getMessage(),
                 'status' => 406
@@ -76,7 +74,6 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
             if($user['is_active'] == 0){
                 Log::channel('custom')->error($request->email.':user login:'.'User is not active. Please contact the System Admin');
-
                 return response()->json([
                     "message" => "User is not active. Please contact the System Admin",
                     "status" => 406

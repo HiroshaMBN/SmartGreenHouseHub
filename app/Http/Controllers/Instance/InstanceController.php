@@ -23,17 +23,17 @@ class InstanceController extends Controller
             'password' =>'required|string'
         ]);
         if($validator->fails()){
-            Log::channel('custom')->error(Auth::user()->email.':make instance:'.$validator->errors()->all());
+            Log::channel('custom')->error(Auth::user()->email.':instance:'.$validator->errors()->all());
 
             return response()->json(["message"=>$validator->errors()->all(),
                                     "status"=>406]);
         }
         instance::create($request->toArray());
-        Log::channel('custom')->info(Auth::user()->email.':make instance:'.'Instance created successfully');
+        Log::channel('custom')->info(Auth::user()->email.':instance:'.'Instance created successfully');
 
         return response()->json(["message"=>"Instance created successfully","status"=>200]);
      }catch(Exception $exception){
-        Log::channel('custom')->error(Auth::user()->email.':make instance:'.$exception->getMessage());
+        Log::channel('custom')->error(Auth::user()->email.':instance:'.$exception->getMessage());
         return response()->json(["message"=>$exception->getMessage(),"status"=>406]);
      }
     }
