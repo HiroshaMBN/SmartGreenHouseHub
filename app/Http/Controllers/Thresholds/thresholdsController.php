@@ -75,5 +75,28 @@ class thresholdsController extends Controller
 
     }
 
+    public function updateNotifications(Request $request){
+       try{
+        $validator = Validator::make($request->all(),[
+            'sensor_name' =>'required',
+            'is_normal'=>'required',
+            'is_warning'=>'required',
+            'is_critical' =>'required'
+        ]);
+        if($validator->fails()){
+            return response()->json(["message"=>$validator->errors()->all(),"status"=>406]);
+        }
+
+
+        $result = thresholds::where('sensor_name',$request->sensor_name)
+                ->update(['is_normal'=>$request->is_normal,
+                'is_warning'=>$request->is_warning,
+                'is_critical'=>$request->is_critical]);
+        return response()->json(["message"=>$result,"status"=>200]);
+       }catch(Exception $exception){
+        return response()->json(["message"=>$exception->getMessage(),"status"=>406]);
+       }    
+    }
+
   
 }
