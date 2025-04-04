@@ -12,7 +12,7 @@ return new class extends Migration
      * @return void
      */
     public function up()
-    {
+   {
         Schema::create('thresholds', function (Blueprint $table) {
             $table->id();
             $table->string('sensor_name');
@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('warning');
             $table->string('critical');
             $table->string('is_enable_notify');
+            $table->bool('is_normal');
+            $table->bool('is_warning');
+            $table->bool('is_critical');
             $table->timestamps();
         });
     }
