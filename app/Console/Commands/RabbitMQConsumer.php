@@ -163,6 +163,22 @@ class RabbitMQConsumer extends Command
     }
   }
 
+  public static function greenHouseLightThree($queueName, $data)
+  {
+    try {
+      $connection = new AMQPStreamConnection(env('RABBITMQ_HOST'), env('RABBITMQ_PORT'), env('RABBITMQ_USERNAME'), env('RABBITMQ_PASSWORD'));
+      $channel = $connection->channel();
+      $messageBody = json_encode($data);
+      $message = new AMQPMessage($messageBody, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
+      $channel->basic_publish($message, env('CONTROL_EXCHANGE'), env('LIGHT_THREE_ROUTE_KEY'));
+      $channel->close();
+      $connection->close();
+      return true;
+    } catch (Exception $exception) {
+      return response()->json(["message" => $exception->getMessage()]);
+    }
+  }
+
   public static function greenHouseExhaustFan($queueName,$data){
     try{
       $connection = new AMQPStreamConnection(env('RABBITMQ_HOST'), env('RABBITMQ_PORT'), env('RABBITMQ_USERNAME'), env('RABBITMQ_PASSWORD'));
@@ -170,6 +186,22 @@ class RabbitMQConsumer extends Command
       $messageBody = json_encode($data);
       $message = new AMQPMessage($messageBody,['delivery_mode'=>AMQPMessage::DELIVERY_MODE_PERSISTENT]);
       $channel->basic_publish($message,env('CONTROL_EXCHANGE'), env('EXHAUST_ROUTE_KEY'));
+      $channel->close();
+      $connection->close();
+      return true;
+    }catch(Exception $exception){
+      return response()->json(["message"=>$exception ]);
+    }
+  }
+
+
+  public static function greenHouseWaterMotor($queueName,$data){
+    try{
+      $connection = new AMQPStreamConnection(env('RABBITMQ_HOST'), env('RABBITMQ_PORT'), env('RABBITMQ_USERNAME'), env('RABBITMQ_PASSWORD'));
+      $channel = $connection->channel();
+      $messageBody = json_encode($data);
+      $message = new AMQPMessage($messageBody,['delivery_mode'=>AMQPMessage::DELIVERY_MODE_PERSISTENT]);
+      $channel->basic_publish($message,env('CONTROL_EXCHANGE'), env('WATER_TANK'));
       $channel->close();
       $connection->close();
       return true;
