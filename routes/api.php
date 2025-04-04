@@ -138,7 +138,8 @@ Route::group([
 
     //get temperature thresholds values
     Route::get('/temperature_threshold',[thresholdsController::class,'temperatureThreshold']);
-
+    //update notification types
+    Route::post('/update_notification',[thresholdsController::class,'updateNotifications']);
     //notification
     Route::get('/tmp_alert',[notificationController::class,'temperatureAlert']);
     //enable whole notification at once 
@@ -156,7 +157,9 @@ Route::group([
     //publish message
     Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
     Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);
+    Route::post('/publish_on_off_light_three',[PublishToMessageToNodemcu::class,'lightThree']);
     Route::post('/publish_on_off_exhaust_fan',[PublishToMessageToNodemcu::class,'exhaustFan']);
+    Route::post('/publish_on_off_water_motor',[PublishToMessageToNodemcu::class,'waterTank']);
 
     //run command in terminal
 
