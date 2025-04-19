@@ -72,6 +72,10 @@ class AuthController extends Controller
                 // return response()->json(['message' =>$validator->errors()->all()],422);
             }
             $user = User::where('email', $request->email)->first();
+            if($user == NULL){
+                Log::channel('custom')->error($request->email.':user login:'.'Requested username not available in the system');
+                return response()->json(["message"=>"Invalid Username","status"=>404]);
+            }
             if($user['is_active'] == 0){
                 Log::channel('custom')->error($request->email.':user login:'.'User is not active. Please contact the System Admin');
                 return response()->json([
@@ -103,7 +107,7 @@ class AuthController extends Controller
             }
         } catch (Exception $exception) {
             // Http error code 406 is Not Acceptable error message
-            Log::channel('custom')->error($user->email.':user login:'.$exception->getMessage());
+            Log::channel('custom')->error("xx".':user login:'.$exception->getMessage());
 
             return response()->json([
                 "message" => $exception->getMessage(),

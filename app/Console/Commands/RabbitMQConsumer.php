@@ -7,6 +7,8 @@ use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use App\Events\SensorDataUpdated;
+use App\Events\AirQualityEvent;
+use App\Events\soilSensorEvent;
 use Illuminate\Support\Facades\Log;
 
 class RabbitMQConsumer extends Command
@@ -55,15 +57,16 @@ class RabbitMQConsumer extends Command
         $data = json_decode($msg->body, true);
         // broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
 
+
         if (isset($data['temperature']) && isset($data['humidity'])) {
           // Broadcast the event with temperature and humidity data
           broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
           // broadcast(new SensorDataUpdated($msg->body ));
-      } else {
-        echo $data['temperature'];
-        echo $data['humidity'];
+        } else {
+          echo $data['temperature'];
+          echo $data['humidity'];
           Log::error('Invalid data received from RabbitMQ: ' . $msg->body);
-      }
+        }
 
 
 
@@ -79,16 +82,38 @@ class RabbitMQConsumer extends Command
       $callback2 = function ($msg2) {
         // echo ' [x] Received ', $msg2->body, "\n";
         $data2 = json_decode($msg2->body, true);
+
+        if (isset($data2['Value']) && isset($data2['status'])) {
+          // Broadcast the event with temperature and humidity data
+          broadcast(new AirQualityEvent($data2['Value'], $data2['status']));
+          // broadcast(new SensorDataUpdated($msg->body ));
+        } else {
+          Log::error('Invalid data received from RabbitMQ: ' . $msg2->body);
+        }
+
+
+        Log::error('Data received from RabbitMQ: MQ2 ' . $msg2->body);
+
         \App\Models\airCondition::create([
           'value' => $data2['Value'],
           'status' => $data2['status']
         ]);
         echo "Update mq2";
-
       };
 
       $callback3 = function ($msg3) {
         $data3 = json_decode($msg3->body, true);
+
+        if (isset($data3['Level']) && isset($data3['status'])) {
+          // Broadcast the event with temperature and humidity data
+          broadcast(new soilSensorEvent($data3['Level'], $data3['status']));
+          // broadcast(new SensorDataUpdated($msg->body ));
+          Log::info('Data received from RabbitMQ: soil ' . $msg3->body);
+        } else {
+          Log::error('Invalid data received from RabbitMQ: ' . $data3->body);
+        }
+
+
         \App\Models\soilMoisture::create([
           'Level' => $data3['Level'],
           'status' => $data3['status']
@@ -116,7 +141,8 @@ class RabbitMQConsumer extends Command
       $channel->close();
       $connection->close();
     } catch (Exception $e) {
-      echo $e->getMessage();
+
+      echo "message: " . $e->getMessage() . " line: " . $e->getLine();
     }
   }
 
@@ -163,18 +189,52 @@ class RabbitMQConsumer extends Command
     }
   }
 
-  public static function greenHouseExhaustFan($queueName,$data){
-    try{
+  public static function greenHouseLightThree($queueName, $data)
+  {
+    try {
       $connection = new AMQPStreamConnection(env('RABBITMQ_HOST'), env('RABBITMQ_PORT'), env('RABBITMQ_USERNAME'), env('RABBITMQ_PASSWORD'));
       $channel = $connection->channel();
       $messageBody = json_encode($data);
-      $message = new AMQPMessage($messageBody,['delivery_mode'=>AMQPMessage::DELIVERY_MODE_PERSISTENT]);
-      $channel->basic_publish($message,env('CONTROL_EXCHANGE'), env('EXHAUST_ROUTE_KEY'));
+      $message = new AMQPMessage($messageBody, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
+      $channel->basic_publish($message, env('CONTROL_EXCHANGE'), env('LIGHT_THREE_ROUTE_KEY'));
       $channel->close();
       $connection->close();
       return true;
-    }catch(Exception $exception){
-      return response()->json(["message"=>$exception ]);
+    } catch (Exception $exception) {
+      return response()->json(["message" => $exception->getMessage()]);
+    }
+  }
+
+  public static function greenHouseExhaustFan($queueName, $data)
+  {
+    try {
+      $connection = new AMQPStreamConnection(env('RABBITMQ_HOST'), env('RABBITMQ_PORT'), env('RABBITMQ_USERNAME'), env('RABBITMQ_PASSWORD'));
+      $channel = $connection->channel();
+      $messageBody = json_encode($data);
+      $message = new AMQPMessage($messageBody, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
+      $channel->basic_publish($message, env('CONTROL_EXCHANGE'), env('EXHAUST_ROUTE_KEY'));
+      $channel->close();
+      $connection->close();
+      return true;
+    } catch (Exception $exception) {
+      return response()->json(["message" => $exception]);
+    }
+  }
+
+
+  public static function greenHouseWaterMotor($queueName, $data)
+  {
+    try {
+      $connection = new AMQPStreamConnection(env('RABBITMQ_HOST'), env('RABBITMQ_PORT'), env('RABBITMQ_USERNAME'), env('RABBITMQ_PASSWORD'));
+      $channel = $connection->channel();
+      $messageBody = json_encode($data);
+      $message = new AMQPMessage($messageBody, ['delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT]);
+      $channel->basic_publish($message, env('CONTROL_EXCHANGE'), env('WATER_TANK'));
+      $channel->close();
+      $connection->close();
+      return true;
+    } catch (Exception $exception) {
+      return response()->json(["message" => $exception]);
     }
   }
 }

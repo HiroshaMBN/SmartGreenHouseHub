@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\soilMoisture;
 use Exception;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SoilLevelController extends Controller
 {
@@ -15,42 +16,56 @@ class SoilLevelController extends Controller
   {
     try {
       $type = $request->type;
-      $date = $request->date;
-   
-
-      //following sql is support for find maximum number of average of soil status 
-      // SELECT MAX(avg_level) AS maxAvg
-      // FROM (
-      //     SELECT AVG(Level) AS avg_level
-      //     FROM soil_moistures
-      //     GROUP BY DATE(created_at)  
-      // ) AS avg_values;
-      // Log::channel('custom')->info(Auth::user()->email . ':climate:' . 'User request all temperature data');
-      $readTemperature = soilMoisture::selectRaw("ROUND(AVG(Level),2) AS level,DATE_FORMAT(created_at, '%Y-%m-%d') as day")
+      $start = $request->startDate;
+      $end = $request->endDate;
+      if ($type == "%") { //all data by day
+        Log::channel('custom')->info(Auth::user()->email . ':soilMoisture:' . 'User request all soil level data');
+        $readSoilMoisture = soilMoisture::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(Level),2) as soil")
           ->groupBy('day')
           ->get();
-
-      // $readTemperature = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(temperature), 2) as temperature")
-      // ->whereBetween('created_at', [$start, $end])
-      // ->groupBy('day')
-      // ->get();
-
-
-      // $readSoilLevel = soilMoisture::selectRaw('ROUND(AVG(Level), 2) AS level, MAX(Level) as maxAvg ,DATE(created_at) AS day')
-      //   ->where('created_at', 'LIKE', '%2025-03%')
-      //   ->groupByRaw('DATE(created_at)')
-      //   ->orderBy('created_date', 'asc')
-      //   ->get();
-
-      return $readTemperature;
-
-
-      // SELECT ROUND(AVG(Level), 2) AS level, DATE(created_at) AS created_date FROM `soil_moistures`
-      //  WHERE created_at LIKE "%" GROUP BY created_date ORDER BY created_date DESC; 
+          // print_r($readSoilMoisture);die();
+      } else if ($type == "daily") {
+        Log::channel('custom')->info(Auth::user()->email . ':soilMoisture:' . 'User request in between' . $start . ' and ' . $end . ' soil level data');
+        $readSoilMoisture = soilMoisture::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(Level), 2) as soil")
+          ->whereBetween('created_at', [$start, $end])
+          ->groupBy('day')
+          ->get();
+      } else if ($type == "monthly") {
+        $start = substr($start, 0, 7); //remove day
+        Log::channel('custom')->info(Auth::user()->email . ':soilMoisture:' . 'User request monthly soil level data');
+        $readSoilMoisture = soilMoisture::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as day, ROUND(AVG(Level), 2) as soil")
+          ->where('created_at', 'LIKE', '%' . $start . '%')
+          ->groupBy('day')
+          ->get();
+      } else if ($type == "yearly") {
+        $start = substr($start, 0, 5); //keep year
+        Log::channel('custom')->info(Auth::user()->email . ':soilMoisture:' . 'User request yearly soil level data');
+        $readSoilMoisture = soilMoisture::selectRaw("DATE_FORMAT(created_at, '%Y') as day, ROUND(AVG(Level), 2) as soil")
+          ->where('created_at', 'LIKE', '%' . $start . '%')
+          ->groupBy('day')
+          ->get();
+      } else {
+        Log::channel('custom')->info(Auth::user()->email . ':soilMoisture:' . 'User request invalid type of time period in soil level reports');
+        return response()->json(["message" => "Invalid type", "status" => 404]);
+      }
+      $soil = array();
+   
+      foreach ($readSoilMoisture as $result) {
+        $soilData = [
+          "soil" => $result->soil,
+          "created_at" => $result->day
+        ];
+        array_push($soil, $soilData);
+      }
+      if ($soil == null) {
+        Log::channel('custom')->warning(Auth::user()->email . ':soilMoisture:' . 'No soil data found');
+        return response()->json(['message' => 'No soil data found', "status" => 404]);
+      }
+      Log::channel('custom')->info(Auth::user()->email . ':soilMoisture:' . 'Show  historical soil successfully');
+      return $soil;
     } catch (Exception $exception) {
+      Log::channel('custom')->error(Auth::user()->email . ':soilMoisture:' . $exception->getMessage());
       return response()->json(["message" => $exception->getMessage(), "status" => 406]);
     }
-    //  return response()->json(soilMoisture::all());
-
   }
 }

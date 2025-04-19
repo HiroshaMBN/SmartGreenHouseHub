@@ -133,20 +133,31 @@ Route::group([
     Route::post('/add_senors',[thresholdsController::class,'AddSensors']);
     //get sensor names
     Route::get('/sensor_name',[thresholdsController::class,'getSensors']);
-     //add thresholds valuee
-    Route::post('/SetThresholds',[thresholdsController::class,'SensorThresholds']);
-
+     //add thresholds values
+    Route::post('/SensorThresholds',[thresholdsController::class,'SensorThresholds']);
     //get temperature thresholds values
     Route::get('/temperature_threshold',[thresholdsController::class,'temperatureThreshold']);
-
+    //update notification types
+    Route::post('/update_notification',[thresholdsController::class,'updateNotifications']);
     //notification
     Route::get('/tmp_alert',[notificationController::class,'temperatureAlert']);
     //enable whole notification at once 
     Route::post('/enable_notifications',[notificationController::class,'enableNotifications']);
+     //read all notification
+    Route::post('/readNotifications',[notificationController::class,'readNotification']);
     //get register's users list for the set contact
     Route::get('reg_users' ,[ContactController::class,'userList']);
     //update contact table
     Route::post('/update_contact',[ContactController::class,'addUserContact']);
+    //send notification in temperature
+    Route::get('/send_notification_temperature',[notificationController::class,'sendTemperatureNotification']);
+    Route::get('/send_notification_air',[notificationController::class,'airQualityNotification']);
+    Route::get('/send_notification_soil',[notificationController::class,'soilQualityNotification']);
+
+    
+    
+    Route::get('/send_notification_humidity',[notificationController::class,'sendHumidityNotification']);
+
 
     //stocks
     Route::post('/add_fertilization_stocks',[StocksController::class,'fertilizationStocks']);
@@ -156,8 +167,11 @@ Route::group([
     //publish message
     Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
     Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);
+    Route::post('/publish_on_off_light_three',[PublishToMessageToNodemcu::class,'lightThree']);
     Route::post('/publish_on_off_exhaust_fan',[PublishToMessageToNodemcu::class,'exhaustFan']);
+    Route::post('/publish_on_off_water_motor',[PublishToMessageToNodemcu::class,'waterTank']);
 
+   
     //run command in terminal
 
     Route::get('/terminal',[RabbitMqConfiguration::class,'Terminal']);

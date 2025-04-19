@@ -22,16 +22,15 @@ class ClimateController extends Controller
             $type = $request->type;
             $start = $request->startDate;
             $end = $request->endDate;
-            $time = $request->time;
+     
 
-            if ($type == "%") { //all data
+            if ($type == "%") { //all data by day
                 Log::channel('custom')->info(Auth::user()->email . ':climate:' . 'User request all temperature data');
                 $readTemperature = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(temperature),2) as temperature")
                     ->groupBy('day')
                     ->get();
             } else if ($type == "daily") {
                 Log::channel('custom')->info(Auth::user()->email . ':climate:' . 'User request in between' . $start . ' and ' . $end . ' temperature data');
-
                 $readTemperature = Climate::selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as day, ROUND(AVG(temperature), 2) as temperature")
                     ->whereBetween('created_at', [$start, $end])
                     ->groupBy('day')
@@ -64,7 +63,7 @@ class ClimateController extends Controller
             }
             if ($temperature == null) {
                 Log::channel('custom')->warning(Auth::user()->email . ':climate:' . 'No temperature data found');
-                return response()->json(['message' => 'No temperature data found'], 404);
+                return response()->json(['message' => 'No temperature data found', "status" => 404]);
             }
             Log::channel('custom')->info(Auth::user()->email . ':climate:' . 'Show  historical temperature successfully');
             return $temperature;
