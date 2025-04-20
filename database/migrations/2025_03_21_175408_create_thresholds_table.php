@@ -23,6 +23,9 @@ return new class extends Migration
             $table->bool('is_normal');
             $table->bool('is_warning');
             $table->bool('is_critical');
+            $table->integer('stop_limit')->default(1);
+            $table->string('notify_type');
+            $table->integer('count');
             $table->timestamps();
         });
     }

@@ -20,3 +20,11 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('sensor-data', function () {
     return true; // Or add authentication if using private channels
 });
+
+Broadcast::channel('soil-sensor', function () {
+    return true; // Or add authentication if using private channels
+});
+
+Broadcast::channel('air-quality',function(){
+    return true;
+});
