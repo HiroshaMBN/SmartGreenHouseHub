@@ -28,3 +28,7 @@ Broadcast::channel('soil-sensor', function () {
 Broadcast::channel('air-quality',function(){
     return true;
 });
+
+Broadcast::channel('ultrasonic-sensor',function(){
+    return true;
+});

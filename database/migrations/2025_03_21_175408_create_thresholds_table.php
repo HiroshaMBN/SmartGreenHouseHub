@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('stop_limit')->default(1);
             $table->string('notify_type');
             $table->integer('count');
+            $table->string('notify_interval');
             $table->timestamps();
         });
     }

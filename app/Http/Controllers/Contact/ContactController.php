@@ -37,8 +37,6 @@ class ContactController extends Controller
         }
     }
 
-
-
     //update user's contact details\ not complete
     public function addUserContact(Request $request)
     {
@@ -65,4 +63,5 @@ class ContactController extends Controller
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);
         }
     }
+
 }

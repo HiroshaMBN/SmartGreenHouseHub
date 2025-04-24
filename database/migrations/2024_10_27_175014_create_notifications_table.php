@@ -17,7 +17,9 @@ return new class extends Migration
             $table->id('notification_id')->autoIncrement();
             $table->string('instance_id')->nullable();
             $table->string('contact_id')->nullable();;
-            $table->string('user_id')->nullable();;
+            $table->string('user')->nullable();;
+            $table->string('mobile')->nullable();;
+            $table->string('email')->nullable();;
             $table->string('message')->nullable();
             $table->string('Type')->nullable();
             $table->timestamps();

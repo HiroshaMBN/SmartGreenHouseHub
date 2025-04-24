@@ -31,7 +31,7 @@ class AuthController extends Controller
             $request['instance_id'] = 1;
             //validation fails
             if ($validator->fails()) {
-            Log::channel('custom')->info($request->email.':user registration:'.$validator->errors()->all());
+            // Log::channel('custom')->info($request->email.':user registration:'.$validator->errors()->all());
                 return response()->json(['message' => $validator->errors()->all(), 'status' => 406]);
             }
             $request['password'] = Hash::make($request['password']);
@@ -50,9 +50,10 @@ class AuthController extends Controller
             return response($response, 200);
         } catch (Exception $exception) {
             // Http error code 406 is Not Acceptable error message
-            Log::channel('custom')->error($user->email.':user registration:'. $exception->getMessage());
+            // Log::channel('custom')->error($user->email.':user registration:'. $exception->getMessage());
             return response()->json([
                 'message' => $exception->getMessage(),
+                'line' => $exception->getLine(),
                 'status' => 406
             ]);
         }

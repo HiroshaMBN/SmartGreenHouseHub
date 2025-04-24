@@ -15,6 +15,7 @@ use App\Http\Controllers\SoilMoisture\SoilLevelController;
 use App\Http\Controllers\Stocks\StocksController;
 use App\Http\Controllers\Thresholds\thresholdsController;
 use App\Http\Controllers\UserManageControllers\UserManageController;
+use App\Http\Controllers\Activities\ActivityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -55,9 +56,13 @@ Route::group([
     //update user profile
     // Route::put('/updateUsers',[UserManageController::class,'updateUserProfile']);
     Route::put('/updateUsers',[UserManageController::class,'updateUserProfile'])->middleware('scope:read-profile');
-    Route::put('/userAccountsActivate',[UserManageController::class,'activeUser']);
+    Route::put('/userAccountsActivate',[UserManageController::class,'updateUserStatus']);
     Route::put('/userAccountsDeactivate',[UserManageController::class,'deactivateUser']);
-
+    Route::post('/getUserStatus',[UserManageController::class,'activationStatus']);
+    //show users's email
+    Route::get('/show_users_mail',[UserManageController::class,'showUsersEmail']);
+    //show user's details
+    Route::post('/show_user_details',[UserManageController::class,'showUserDetails']);
     //pass data to rabbitMq start
     //light on
     Route::get('/turnOnLight',[PassToQController::class,'lightOn']);
@@ -139,6 +144,8 @@ Route::group([
     Route::get('/temperature_threshold',[thresholdsController::class,'temperatureThreshold']);
     //update notification types
     Route::post('/update_notification',[thresholdsController::class,'updateNotifications']);
+    //get threshold
+    Route::get('/get_threshold_values',[thresholdsController::class,'showThreshold']);
     //notification
     Route::get('/tmp_alert',[notificationController::class,'temperatureAlert']);
     //enable whole notification at once 
@@ -153,10 +160,15 @@ Route::group([
     Route::get('/send_notification_temperature',[notificationController::class,'sendTemperatureNotification']);
     Route::get('/send_notification_air',[notificationController::class,'airQualityNotification']);
     Route::get('/send_notification_soil',[notificationController::class,'soilQualityNotification']);
-
-    
-    
+        
     Route::get('/send_notification_humidity',[notificationController::class,'sendHumidityNotification']);
+  
+  //activity controller
+    Route::get('/error_log',[ActivityController::class,'errorLogToDB']);
+    Route::get('/info_log',[ActivityController::class,'infoLogToDB']);
+    Route::post('/show_error_log',[ActivityController::class,'showErrorLogToDb']);
+    Route::post('/show_info_log',[ActivityController::class,'showInfoLogToDb']);
+    Route::get('/say_getGreeting',[ActivityController::class,'getGreeting']);
 
 
     //stocks
@@ -170,10 +182,7 @@ Route::group([
     Route::post('/publish_on_off_light_three',[PublishToMessageToNodemcu::class,'lightThree']);
     Route::post('/publish_on_off_exhaust_fan',[PublishToMessageToNodemcu::class,'exhaustFan']);
     Route::post('/publish_on_off_water_motor',[PublishToMessageToNodemcu::class,'waterTank']);
-
-   
     //run command in terminal
-
     Route::get('/terminal',[RabbitMqConfiguration::class,'Terminal']);
 
 })->middleware('auth:api');

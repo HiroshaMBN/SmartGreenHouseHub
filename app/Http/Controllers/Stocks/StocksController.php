@@ -53,8 +53,6 @@ class StocksController extends Controller
                 "next_stock_date" => "string",
                 "unit_price" => "",
                 "stock_level" => "string"
-
-
             ]);
             if ($validator->fails()) {
                 return response()->json(["message" => $validator->errors()->all(), "status" => 406]);
@@ -88,15 +86,16 @@ class StocksController extends Controller
         ]);
     }
 
-
      //show fertilization stocks
     public function showFertilizationStocks(){
         $result = fertilization::all();
-        return $result;
+        return response()->json(["message"=>$result,"status"=>200]);
+       
     }
     //show seeds stocks
     public function showSeedStocks(){
         $result = seeds::all();
-        return $result;
+        return response()->json(["message"=>$result,"status"=>200]);
+
     }
 }

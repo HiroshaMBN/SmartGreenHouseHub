@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class notification extends Model
+class errorLogData extends Model
 {
     use HasFactory;
-    protected $fillable = ['notification_id','instance_id','contact_id','user','mobile','email','message','Type'];
+    protected $fillable = ['log_time','information'];
+
 }
