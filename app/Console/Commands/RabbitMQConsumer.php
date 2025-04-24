@@ -8,6 +8,7 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use App\Events\SensorDataUpdated;
 use App\Events\AirQualityEvent;
+use App\Events\ultrasonicWaterLevel;
 use App\Events\soilSensorEvent;
 use Illuminate\Support\Facades\Log;
 
@@ -27,16 +28,16 @@ class RabbitMQConsumer extends Command
   {
     try {
       $connection = new AMQPStreamConnection(
-        env('RABBITMQ_HOST'),
-        env('RABBITMQ_PORT'),
-        env('RABBITMQ_USERNAME'),
-        env('RABBITMQ_PASSWORD'),
-        env('RABBITMQ_VHOST')
-        // '192.168.8.104',
-        // 5672,
-        // 'guest',
-        // 'guest',
-        // '/'
+        // env('RABBITMQ_HOST'),
+        // env('RABBITMQ_PORT'),
+        // env('RABBITMQ_USERNAME'),
+        // env('RABBITMQ_PASSWORD'),
+        // env('RABBITMQ_VHOST')
+        '10.128.1.52',
+        5672,
+        'guest',
+        'guest',
+        '/'
       );
 
       $channel = $connection->channel();
@@ -46,6 +47,8 @@ class RabbitMQConsumer extends Command
       $channel->queue_declare('sensor/mq2', false, true, false, false);
       //soil moisture queue
       $channel->queue_declare('sensor/soil', false, true, false, false);
+      $channel->queue_declare('sensor/ultrasonic', false, true, false, false);
+
       //on off trigger
       // $channel->queue_declare('mqtt-subscription-ESP8266Client-4ff3qos0',false,true,false,false);
       $channel->queue_declare('device_control', false, true, false, false);
@@ -77,7 +80,6 @@ class RabbitMQConsumer extends Command
         echo "Update climate";
         // broadcast(new \App\Events\SensorDataReceived($msg->body ));
       };
-
 
       $callback2 = function ($msg2) {
         // echo ' [x] Received ', $msg2->body, "\n";
@@ -127,12 +129,30 @@ class RabbitMQConsumer extends Command
         $msg->ack();
       };
 
+      $callback5 = function ($msg5) {
+        $msg5 = json_decode($msg5->body, true);
+        if (isset($msg5['distance'])) {
+          // Broadcast the event with temperature and humidity data
+          broadcast(new ultrasonicWaterLevel($msg5['distance']));
+          // broadcast(new SensorDataUpdated($msg->body ));
+          Log::info('Data received from RabbitMQ: ultrasonic: ' . $msg5['distance']);
+        } else {
+          Log::error('Invalid data received from RabbitMQ: ' . $msg5['distance']);
+        }
+
+        \App\Models\waterLevel::create([
+          'stock' => $msg5['distance']
+        ]);
+        echo "Update ultrasonic";
+      };
 
       $channel->basic_consume('sensor/dht11', '', false, true, false, false, $callback);
       $channel->basic_consume('sensor/mq2', '', false, true, false, false, $callback2);
       $channel->basic_consume('sensor/soil', '', false, true, false, false, $callback3);
       //read message from q to
       $channel->basic_consume('device_control', '', false, false, false, false, $callback4);
+      $channel->basic_consume('sensor/ultrasonic', '', false, true, false, false, $callback5);
+
 
       while ($channel->is_consuming()) {
         $channel->wait();
