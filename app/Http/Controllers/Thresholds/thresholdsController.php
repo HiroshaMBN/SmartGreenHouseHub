@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Thresholds;
 
 use App\Http\Controllers\Controller;
 use App\Models\thresholds;
+use App\Models\User;
 use App\Models\sensor_controller;
+use App\Models\contactToThreshold;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 
@@ -61,16 +63,31 @@ class thresholdsController extends Controller
                 'critical' => 'required',
                 'stop_limit' => 'required',
                 'notify_type' => 'required',
-                'is_enable_notify'=>'',
-                'is_normal'=>'',
-                'is_warning'=>'',
-                'is_critical'=>'',
+                'is_enable_notify' => '',
+                'is_normal' => '',
+                'is_warning' => '',
+                'is_critical' => '',
+                'notify_interval' => '',
+                'email' => ''
             ]);
             if ($validator->fails()) {
                 return response()->json(['message' => $validator->errors()->all(), 'status' => 406]);
             }
 
+            $threshold = thresholds::where('sensor_name', $request->sensor_name)->get('id');
+            $user = User::where('email', $request->email)->get('id');
+            foreach ($threshold as $result) {
+                $thresholdID = $result->id;
+            }
+            foreach ($user as $result) {
+                $userID = $result->id;
+            }
 
+
+            contactToThreshold::create([
+                "contact_id" => $userID,
+                "threshold_id" => $thresholdID
+            ]);
             // $user = User::create($request->toArray());
             $result = thresholds::where('sensor_name', $request->sensor_name)->update([
                 'normal' => $request->normal,
@@ -78,11 +95,14 @@ class thresholdsController extends Controller
                 'critical' => $request->critical,
                 'stop_limit' => $request->stop_limit,
                 'notify_type' => $request->notify_type,
-                'is_enable_notify'=>$request->is_enable_notify,
-                'is_normal'=>$request->is_normal,
-                'is_warning'=>$request->is_warning,
-                'is_critical'=>$request->is_critical,
-                'count' => 0
+                'is_enable_notify' => $request->is_enable_notify,
+                'is_normal' => $request->is_normal,
+                'is_warning' => $request->is_warning,
+                'is_critical' => $request->is_critical,
+                'notify_interval' => $request->notify_interval,
+                'count' => 0,
+                // 'count' => ($existLimit == $request->stop_limit )?:0, 
+
             ]);
 
             // $result = thresholds::create($request->toArray());
@@ -91,9 +111,7 @@ class thresholdsController extends Controller
             return response()->json(["message" => $exception->getMessage(), "status" => "401"]);
         }
     }
-   
-
-
+    //update notify
     public function updateNotifications(Request $request)
     {
         try {
@@ -117,6 +135,35 @@ class thresholdsController extends Controller
             return response()->json(["message" => $result, "status" => 200]);
         } catch (Exception $exception) {
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);
+        }
+    }
+    //show threshold values ($x == 1) ? 'yes' : 'no';
+    public function showThreshold()
+    {
+        try {
+            $thresholdArray = array();
+            $thresholdResult = thresholds::get();
+            foreach ($thresholdResult as $result) {
+                $data = [
+                    "sensor_name" => $result->sensor_name,
+                    "normal" => $result->normal,
+                    "warning" => $result->warning,
+                    "critical" => $result->critical,
+                    "is_enable_notification" => ($result->is_enable_notify == 1) ? 'Notification enabled' : 'Notification disabled',
+                    "is_normal" => ($result->is_normal == 1) ? 'Send Notification' : 'Never send notification',
+                    "is_warning" => ($result->is_warning == 1) ? 'Send Notification' : 'Never send notification',
+                    "is_critical" => ($result->is_critical == 1) ? 'Send Notification' : 'Never send notification',
+                    "notification_stop_limit" => $result->stop_limit,
+                    "send_notification_count" => $result->count,
+                    "notification_method" => $result->notify_type,
+                    "notify_interval" => $result->notify_interval,
+
+                ];
+                array_push($thresholdArray, $data);
+            }
+            return response()->json(["message" => $thresholdArray, "status" => 200]);
+        } catch (Exception $exception) {
+            return response()->json(["message" => $exception->getMessage(), "line" => $exception->getLine(), "status" => 406]);
         }
     }
 }
