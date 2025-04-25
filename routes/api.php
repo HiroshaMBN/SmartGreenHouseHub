@@ -152,6 +152,9 @@ Route::group([
     Route::post('/enable_notifications',[notificationController::class,'enableNotifications']);
      //read all notification
     Route::post('/readNotifications',[notificationController::class,'readNotification']);
+    //delete notification users
+    Route::post('/delete_notify_users',[notificationController::class,'deleteContactFromNotification']);
+
     //get register's users list for the set contact
     Route::get('reg_users' ,[ContactController::class,'userList']);
     //update contact table
@@ -160,6 +163,7 @@ Route::group([
     Route::get('/send_notification_temperature',[notificationController::class,'sendTemperatureNotification']);
     Route::get('/send_notification_air',[notificationController::class,'airQualityNotification']);
     Route::get('/send_notification_soil',[notificationController::class,'soilQualityNotification']);
+    Route::post('/contact_to_notify',[notificationController::class,'contactToSensorNotification']);
         
     Route::get('/send_notification_humidity',[notificationController::class,'sendHumidityNotification']);
   

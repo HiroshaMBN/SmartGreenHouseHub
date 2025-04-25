@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->integer('contact_id');
             $table->integer('threshold_id');
+            $table->string('notify_type');
             $table->timestamps();
         });
     }

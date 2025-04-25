@@ -9,6 +9,7 @@ use App\Models\airCondition;
 use App\Models\soilMoisture;
 use App\Models\notificationActivation;
 use App\Models\notification;
+use App\Models\contactToThreshold;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -129,10 +130,12 @@ class notificationController extends Controller
     $resultArray = array();
     foreach ($results as $result) {
       $data = [
-        "user_id" => $result->user_id,
+        "user_id" => $result->user,
         "message" => $result->message,
         "type" => $result->Type,
-        "time" => $result->created_at
+        "time" => $result->created_at,
+        "mobile" => $result->mobile,
+        "email" => $result->email,
       ];
       array_push($resultArray, $data);
     }
@@ -160,6 +163,17 @@ class notificationController extends Controller
     }
     return $contactDetails;
   }
+  public function filterContactToThreshold($sensor_name)
+  {
+    $contactToThreshold = DB::table('contacts')
+      ->join('contact_to_thresholds', 'contact_to_thresholds.contact_id', '=', 'contacts.contact_id')
+      ->join('thresholds', 'thresholds.id', '=', 'contact_to_thresholds.threshold_id')
+      // ->join('users', 'users.id', '=', 'contact_to_thresholds.threshold_id')
+      ->select('contacts.mobile', 'contacts.email', 'contacts.user_id')
+      ->where('thresholds.sensor_name', '=', $sensor_name)
+      ->get();
+    return $contactToThreshold;
+  }
 
   //send temperature notification 
   public function sendTemperatureNotification()
@@ -170,6 +184,7 @@ class notificationController extends Controller
 
     $userNotificationClass = new notificationController();
     $contactDetails = $userNotificationClass->userNotifications('dht11-tmp');
+    $contactToThreshold = $userNotificationClass->filterContactToThreshold('dht11-tmp');
 
 
     foreach ($thresholdResult as $result) {
@@ -199,10 +214,10 @@ class notificationController extends Controller
             // }
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Temperature(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -210,11 +225,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
+                // var_dump($result);die();
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result->first_name,
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Temperature(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -230,10 +246,10 @@ class notificationController extends Controller
             // }
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Temperature(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -241,11 +257,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send SMS of Temperature(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -256,30 +272,30 @@ class notificationController extends Controller
 
             return true;
           } else {
-            foreach ($contactDetails as $result) {
+            foreach ($contactToThreshold as $result) {
               // foreach ($contactDetails as $result) {
               //   $threshold->increment('count');
               //   Log::channel('custom')->info("System Generated" . ':Notification:' . $result['mobile'] . " & " . $result['email'] . 'Send both E-mail and SMS of Temperature(Normal) - Successfully');
               // }
               if (($notifyCount + 1) == $stopLimit) {
                 $threshold->increment('count');
-                foreach ($contactDetails as $result) {
+                foreach ($contactToThreshold as $result) {
                   notification::create([
-                    "user" => $result['user_name'],
-                    "mobile" => $result['mobile'],
-                    "email" => $result['email'],
+                    // "user" => $result['first_name'],
+                    "mobile" => $result->mobile,
+                    "email" => $result->email,
                     "message" => "Send both SMS & E-mail of Temperature(Normal) - Successfully",
                     "Type" => "SMS & Email"
                   ]);
                   break;
                 }
               } else {
-                foreach ($contactDetails as $result) {
+                foreach ($contactToThreshold as $result) {
                   $threshold->increment('count');
                   notification::create([
-                    "user" => $result['user_name'],
-                    "mobile" => $result['mobile'],
-                    "email" => $result['email'],
+                    // "user" => $result['first_name'],
+                    "mobile" => $result->mobile,
+                    "email" => $result->email,
                     "message" => "Send both SMS & E-mail Temperature(Normal) - Successfully",
                     "Type" => "SMS & Email"
                   ]);
@@ -312,10 +328,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Temperature(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -323,11 +339,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Temperature(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -341,10 +357,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Temperature(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -352,11 +368,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Temperature(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -369,11 +385,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Temperature(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -381,12 +397,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Temperature(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -419,10 +435,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send SMS of Temperature(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -430,11 +446,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Temperature(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -451,10 +467,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Temperature(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -462,11 +478,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Temperature(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -489,11 +505,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Temperature(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -501,12 +517,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['first_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Temperature(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -531,10 +547,9 @@ class notificationController extends Controller
     $thresholdResult = thresholds::where('sensor_name', '=', "dht11-humid")->get();
     $humidityResult = Climate::latest()->first();
     $threshold = thresholds::where('sensor_name', 'dht11-humid')->first();
-
-
     $userNotificationClass = new notificationController();
     $contactDetails = $userNotificationClass->userNotifications('dht11-humid');
+    $contactToThreshold = $userNotificationClass->filterContactToThreshold('dht11-humid');
 
 
     foreach ($thresholdResult as $result) {
@@ -563,21 +578,22 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  // "email" => $result->email,
                   "message" => "Send SMS of Humidity(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Humidity(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -590,10 +606,9 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Humidity(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -601,11 +616,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Humidity(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -621,11 +636,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "mobile" => $result->email,
                   "message" => "Send both SMS & E-mail of Humidity(Normal) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -633,12 +648,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "mobile" => $result->email,
                   "message" => "Send both SMS & E-mail of Humidity(Normal) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -673,11 +688,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send both SMS & E-mail of Humidity(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -685,12 +699,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send both SMS & E-mail of Humidity(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -703,11 +716,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Humidity(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -715,12 +727,10 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Humidity(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -750,10 +760,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+
                   "message" => "Send SMS of Humidity(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -761,11 +772,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Humidity(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -778,11 +789,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
                   "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Humidity(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -790,12 +800,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
                   "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Humidity(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -808,11 +817,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "mobile" => $result->email,
                   "message" => "Send both SMS & E-mail of Humidity(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -820,12 +828,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "mobile" => $result->email,
                   "message" => "Send both SMS & E-mail of Humidity(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -853,6 +860,7 @@ class notificationController extends Controller
 
     $userNotificationClass = new notificationController();
     $contactDetails = $userNotificationClass->userNotifications('mq2');
+    $contactToThreshold = $userNotificationClass->filterContactToThreshold('mq2');
 
     foreach ($thresholdResult as $result) {
       $isNormal = $result->is_normal;
@@ -879,10 +887,9 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Air Quality(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -890,11 +897,10 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Air Quality(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -907,10 +913,9 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Air Quality(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -918,11 +923,10 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Air Quality(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -936,11 +940,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Air Quality(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -948,12 +951,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Air Quality(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -974,10 +976,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Air Quality(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -985,11 +987,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Air Quality(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1002,10 +1004,9 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Air Quality(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1013,11 +1014,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->email,
                   "message" => "Send E-mail of Air Quality(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1030,11 +1031,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Air Quality(Warning) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1042,12 +1042,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Air Quality(Warning) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1069,10 +1068,9 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Air Quality(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1080,11 +1078,10 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Air Quality(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1097,10 +1094,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Air Quality(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1108,11 +1105,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Air Quality(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1124,11 +1121,11 @@ class notificationController extends Controller
             // $threshold->increment('count');
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Air Quality(Normal) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1136,12 +1133,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Air Quality(Normal) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1492,8 +1488,6 @@ class notificationController extends Controller
   //   }
   // }
 
-
-
   public function soilQualityNotification()
   {
     $thresholdResult = thresholds::where('sensor_name', '=', "soil")->get();
@@ -1501,6 +1495,7 @@ class notificationController extends Controller
     $threshold = thresholds::where('sensor_name', 'soil')->first();
     $userNotificationClass = new notificationController();
     $contactDetails = $userNotificationClass->userNotifications('soil');
+    $contactToThreshold = $userNotificationClass->filterContactToThreshold('soil');
 
     foreach ($thresholdResult as $result) {
       $isNormal = $result->is_normal;
@@ -1530,10 +1525,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Soil Level(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1541,11 +1536,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+
                   "message" => "Send SMS of Soil Level(Normal) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1558,10 +1554,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Soil Level(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1569,11 +1565,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "email" => $result->email,
                   "message" => "Send E-mail of Soil Level(Normal) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1586,11 +1582,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Soil Level(Normal) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1598,12 +1594,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Soil Level(Normal) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1625,10 +1621,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+
                   "message" => "Send SMS of Soil Level(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1636,12 +1633,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send SMS of Soil Level(Warning) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1654,7 +1651,7 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
                   "user" => $result['user_name'],
                   "email" => $result['email'],
@@ -1665,11 +1662,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "email" => $result->email,
+
                   "message" => "Send E-mail of Soil Level(Warning) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1682,11 +1680,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Soil Level(Warning) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1694,12 +1692,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Soil Level(Warning) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1723,10 +1720,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Soil Level(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1734,11 +1731,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
                   "message" => "Send SMS of Soil Level(Critical) - Successfully",
                   "Type" => "SMS"
                 ]);
@@ -1751,11 +1748,11 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send E-mail of Soil Level(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1763,12 +1760,12 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  // "user" => $result['user_name'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send E-mail of Soil Level(Critical) - Successfully",
                   "Type" => "Email"
                 ]);
@@ -1781,11 +1778,10 @@ class notificationController extends Controller
 
             if (($notifyCount + 1) == $stopLimit) {
               $threshold->increment('count');
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Soil Level(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1793,12 +1789,11 @@ class notificationController extends Controller
                 break;
               }
             } else {
-              foreach ($contactDetails as $result) {
+              foreach ($contactToThreshold as $result) {
                 $threshold->increment('count');
                 notification::create([
-                  "user" => $result['user_name'],
-                  "mobile" => $result['mobile'],
-                  "email" => $result['email'],
+                  "mobile" => $result->mobile,
+                  "email" => $result->email,
                   "message" => "Send both SMS & E-mail of Soil Level(Critical) - Successfully",
                   "Type" => "SMS & Email"
                 ]);
@@ -1817,10 +1812,10 @@ class notificationController extends Controller
         // $threshold->increment('count');
         if (($notifyCount + 1) == $stopLimit) {
           $threshold->increment('count');
-          foreach ($contactDetails as $result) {
+          foreach ($contactToThreshold as $result) {
             notification::create([
-              "user" => $result['user_name'],
-              "mobile" => $result['mobile'],
+              // "user" => $result['user_name'],
+              "mobile" => $result->mobile,
               "message" => "Send SMS of Soil Status(Soil wet too much) - Successfully",
               "Type" => "SMS"
             ]);
@@ -1828,11 +1823,11 @@ class notificationController extends Controller
             break;
           }
         } else {
-          foreach ($contactDetails as $result) {
+          foreach ($contactToThreshold as $result) {
             $threshold->increment('count');
             notification::create([
-              "user" => $result['user_name'],
-              "mobile" => $result['mobile'],
+              // "user" => $result['user_name'],
+              "mobile" => $result->mobile,
               "message" => "Send SMS of Soil Status(Soil wet too much) - Successfully",
               "Type" => "SMS"
             ]);
@@ -1844,10 +1839,10 @@ class notificationController extends Controller
         // $threshold->increment('count');
         if (($notifyCount + 1) == $stopLimit) {
           $threshold->increment('count');
-          foreach ($contactDetails as $result) {
+          foreach ($contactToThreshold as $result) {
             notification::create([
-              "user" => $result['user_name'],
-              "email" => $result['email'],
+              // "user" => $result['user_name'],
+              "email" => $result->email,
               "message" => "Send E-mail of Soil Status(Soil wet too much) - Successfully",
               "Type" => "Email"
             ]);
@@ -1855,11 +1850,11 @@ class notificationController extends Controller
             break;
           }
         } else {
-          foreach ($contactDetails as $result) {
+          foreach ($contactToThreshold as $result) {
             $threshold->increment('count');
             notification::create([
-              "user" => $result['user_name'],
-              "email" => $result['email'],
+              // "user" => $result['user_name'],
+              "email" => $result->email,
               "message" => "Send E-mail of Soil Status(Soil wet too much) - Successfully",
               "Type" => "Email"
             ]);
@@ -1870,35 +1865,81 @@ class notificationController extends Controller
         // Log::channel('custom')->info("System Generated" . ':Notification:' . 'Send both SMS & E-mail of Soil Status(Soil wet too much) - Successfully');
         // $threshold->increment('count');
 
-        
- if (($notifyCount + 1) == $stopLimit) {
-  $threshold->increment('count');
-  foreach ($contactDetails as $result) {
-    notification::create([
-      "user" => $result['user_name'],
-      "mobile" => $result['mobile'],
-      "email" => $result['email'],
-      "message" => "Send both SMS & E-mail of Soil Status(Soil wet too much) - Successfully",
-      "Type" => "SMS & Email"
-    ]);
-  
-    break;
-  }
-} else {
-  foreach ($contactDetails as $result) {
-    $threshold->increment('count');
-    notification::create([
-      "user" => $result['user_name'],
-      "mobile" => $result['mobile'],
-      "email" => $result['email'],
-      "message" => "Send both SMS & E-mail of Soil Status(Soil wet too much) - Successfully",
-      "Type" => "SMS & Email"
-    ]);
 
-  }
-}
+        if (($notifyCount + 1) == $stopLimit) {
+          $threshold->increment('count');
+          foreach ($contactToThreshold as $result) {
+            notification::create([
+              // "user" => $result['user_name'],
+              "mobile" => $result->mobile,
+              "email" => $result->email,
+              "message" => "Send both SMS & E-mail of Soil Status(Soil wet too much) - Successfully",
+              "Type" => "SMS & Email"
+            ]);
+
+            break;
+          }
+        } else {
+          foreach ($contactToThreshold as $result) {
+            $threshold->increment('count');
+            notification::create([
+              // "user" => $result['user_name'],
+              "mobile" => $result->mobile,
+              "email" => $result->email,
+              "message" => "Send both SMS & E-mail of Soil Status(Soil wet too much) - Successfully",
+              "Type" => "SMS & Email"
+            ]);
+          }
+        }
         return true;
       }
     }
+  }
+  public function contactToSensorNotification(Request $request)
+  {
+    $contactDetails = array();
+
+    $contacts = DB::table('users')
+      ->select('users.email', 'users.first_name', 'contacts.mobile', 'contacts.email', 'thresholds.sensor_name')
+      ->join('contacts', 'contacts.user_id', '=', 'users.id')
+      ->join('contact_to_thresholds', 'contact_to_thresholds.contact_id', '=', 'contacts.user_id')
+      ->join('thresholds', 'thresholds.id', '=', 'contact_to_thresholds.threshold_id')
+      ->where('contacts.email', '=', $request->email)
+      ->get();
+
+    foreach ($contacts as $result) {
+      // Add the mobile number to the array
+      $contactDetails[] = [
+        "email" => $result->email,
+        "mobile" => $result->mobile,
+        "user_name" => $result->first_name,
+        "thresholds" => $result->sensor_name,
+      ];
+    }
+    return $contactDetails;
+  }
+  public function deleteContactFromNotification(Request $request)
+  {
+    // DELETE contact_to_thresholds FROM contact_to_thresholds
+    //  INNER JOIN contacts ON contact_to_thresholds.contact_id = contacts.user_id WHERE contacts.email = "hirosha@gmial.com";
+    // echo ($request->email);
+    // echo ( $request->sensor_name);die();
+    // $result = DB::table('contact_to_thresholds')
+    //   ->join('contacts', 'contact_to_thresholds.contact_id', '=', 'contacts.user_id')
+    //   ->join('thresholds', 'thresholds.id', '=', 'contact_to_thresholds.threshold_id')
+    //   ->where('contacts.email', '=', $request->email)
+    //   ->where('thresholds.sensor_name', '=', $request->sensor_name)
+    //   ->delete();
+    $result = DB::table('contact_to_thresholds')
+      ->join('contacts', 'contact_to_thresholds.contact_id', '=', 'contacts.contact_id')
+      ->join('thresholds', 'thresholds.id', '=', 'contact_to_thresholds.threshold_id')
+      ->where('contacts.email', '=', $request->email)
+      ->where('thresholds.sensor_name', '=', $request->sensor_name)
+      ->delete();
+
+
+
+
+    return  $result;
   }
 }
