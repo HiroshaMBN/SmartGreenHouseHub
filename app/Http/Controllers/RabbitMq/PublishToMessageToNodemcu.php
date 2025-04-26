@@ -12,6 +12,7 @@ use App\Console\Commands\RabbitMQConsumer;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\thresholds;
 
 class PublishToMessageToNodemcu extends Controller
 {
@@ -127,6 +128,33 @@ class PublishToMessageToNodemcu extends Controller
             }
         } catch (Exception $exception) {
             Log::channel('custom')->info(Auth::user()->email . ':publishToQ' . $exception->getMessage());
+            return response()->json(["message" => $exception->getMessage(), "status" => 500]);
+        }
+    }
+
+
+    //automated function
+    public function  exhaustFanAutomated($messageData)
+    { #D3
+        try {
+            $threshold = thresholds::where('sensor_name', 'dht11_temp')->get('is_automate');
+
+            // $messageData = $request->input('message_data', []);
+            $success = RabbitMQConsumer::greenHouseExhaustFan(env('CONTROL_QUEUE'), $messageData);
+            if ($success) {
+                if ($messageData == "ON") {
+                    Log::channel('custom')->info("System generated" . ':Automate' . 'EXHAUST_FAN_ON');
+                    return response()->json(["message" => env('EXHAUST_FAN_ON'), "status" => 200]);
+                } else {
+                    Log::channel('custom')->info("System generated"  . ':Automate' . 'EXHAUST_FAN_OFF');
+                    return response()->json(["message" => env('EXHAUST_FAN_OFF'), "status" => 200]);
+                }
+            } else {
+                Log::channel('custom')->info("System generated" . ':Automate' . "Failed to EXHAUST_FAN publish message");
+                return response()->json(["message" => 'Failed to publish message', "status" => 500]);
+            }
+        } catch (Exception $exception) {
+            Log::channel('custom')->info("System generated" . ':Automate' . $exception->getMessage());
             return response()->json(["message" => $exception->getMessage(), "status" => 500]);
         }
     }

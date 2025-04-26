@@ -63,6 +63,7 @@ class thresholdsController extends Controller
                 'critical' => 'required',
                 'stop_limit' => 'required',
                 'notify_type' => 'required',
+                'is_automate'=>'',
                 'is_enable_notify' => '',
                 'is_normal' => '',
                 'is_warning' => '',
@@ -81,20 +82,27 @@ class thresholdsController extends Controller
             }
             foreach ($user as $result) {
                 $userID = $result->id;
+                $userName = $result->first_name;
             }
+            
+ 
+            if($request->email != NULL){
+                contactToThreshold::create([
+                    "contact_id" => $userID,
+                    "threshold_id" => $thresholdID,
+                    "notify_type" =>$request->notify_type,
+                    'notify_interval' => $request->notify_interval	
+                ]);
+            }
+ 
 
-
-            contactToThreshold::create([
-                "contact_id" => $userID,
-                "threshold_id" => $thresholdID
-            ]);
             // $user = User::create($request->toArray());
             $result = thresholds::where('sensor_name', $request->sensor_name)->update([
                 'normal' => $request->normal,
                 'warning' => $request->warning,
                 'critical' => $request->critical,
                 'stop_limit' => $request->stop_limit,
-                'notify_type' => $request->notify_type,
+                'is_automate' => $request->is_automate,
                 'is_enable_notify' => $request->is_enable_notify,
                 'is_normal' => $request->is_normal,
                 'is_warning' => $request->is_warning,
@@ -108,7 +116,13 @@ class thresholdsController extends Controller
             // $result = thresholds::create($request->toArray());
             return response()->json(["message" => $request->sensor_name . ' Thresholds update successfully', "status" => 200]);
         } catch (Exception $exception) {
-            return response()->json(["message" => $exception->getMessage(), "status" => "401"]);
+            
+            if((strpos($exception->getMessage(),'Duplicate entry'))){
+            return response()->json(["message" => $request->email." is already define to ".$request->sensor_name." sensor threshold","status"=>"exist"]);
+            }else{
+                return response()->json(["message" => $exception->getMessage(), "status" => "406sss"]);
+
+            }
         }
     }
     //update notify
