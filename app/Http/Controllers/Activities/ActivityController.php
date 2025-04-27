@@ -88,7 +88,7 @@ class ActivityController extends Controller
     public function infoLogToDB()
     {
         // Define the path to your custom.log file
-        $logFilePath = storage_path('logs/custom.log'); // Or your custom path
+        $logFilePath = storage_path('logs/custom.log'); 
 
         // Check if the log file exists
         if (!file_exists($logFilePath)) {

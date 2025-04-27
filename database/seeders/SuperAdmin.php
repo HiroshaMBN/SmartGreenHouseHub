@@ -15,21 +15,15 @@ class SuperAdmin extends Seeder
      */
     public function run()
     {
-        // User::create([
-
-        //     'name' => 'Hardik',
-
-        //     'email' => 'admin@gmail.com',
-
-        //     'password' => bcrypt('123456'),
-
-        // ]);
+ 
     User::create([
         'instance_id' => 1,
         'contact_id' => 1,
         'first_name' => 'super',
         'last_name' => 'admin',
-        'email' => 'superadmin@gmail.com',
+        'email' => 'superadmin@greenhouse.lk',
+        'is_active' =>1,
+        'type'=>'admin',
         'password' => bcrypt('admin123'),
     ]);
     }

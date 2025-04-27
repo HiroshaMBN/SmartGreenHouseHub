@@ -135,9 +135,9 @@ class PublishToMessageToNodemcu extends Controller
 
     //automated function
     public function  exhaustFanAutomated($messageData)
-    { #D3
+    { #
         try {
-            $threshold = thresholds::where('sensor_name', 'dht11_temp')->get('is_automate');
+            $threshold = thresholds::where('sensor_name', 'dht11-tmp')->get('is_automate');
 
             // $messageData = $request->input('message_data', []);
             $success = RabbitMQConsumer::greenHouseExhaustFan(env('CONTROL_QUEUE'), $messageData);
@@ -155,6 +155,29 @@ class PublishToMessageToNodemcu extends Controller
             }
         } catch (Exception $exception) {
             Log::channel('custom')->info("System generated" . ':Automate' . $exception->getMessage());
+            return response()->json(["message" => $exception->getMessage(), "status" => 500]);
+        }
+    }
+
+    public function  waterMotorAutomated($messageData)
+    { #D5
+        try {
+            // $messageData = $request->input('message_data', []);
+            $success = RabbitMQConsumer::greenHouseWaterMotor(env('CONTROL_QUEUE'), $messageData);
+            if ($success) {
+                if ($messageData == "ON") {
+                    Log::channel('custom')->info("System generated" . ':Automate' . 'WATER_TANK_ON');
+                    return response()->json(["message" => env('WATER_TANK_ON'), "status" => 200]);
+                } else {
+                    Log::channel('custom')->info("System generated" . ':Automate' . 'WATER_TANK_OFF');
+                    return response()->json(["message" => env('WATER_TANK_OFF'), "status" => 200]);
+                }
+            } else {
+                Log::channel('custom')->info("System generated". ':Automate' . "Failed to WATER_TANK publish message");
+                return response()->json(["message" => 'Failed to publish message', "status" => 500]);
+            }
+        } catch (Exception $exception) {
+            Log::channel('custom')->info("System generated". ':Automate' . $exception->getMessage());
             return response()->json(["message" => $exception->getMessage(), "status" => 500]);
         }
     }

@@ -19,32 +19,43 @@ class thresholdsController extends Controller
     public function AddSensors(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'display_name' => 'required|string',
-            'status' => "required"
+            'name' => 'string',
+            'sensor_name' => 'required|string|unique:thresholds,sensor_name',
+            'status' => ""
         ]);
 
         if ($validator->fails()) {
             return response()->json(["message" => $validator->errors()->all(), "status" => 406]);
         }
-        $addSensor = sensor_controller::create($request->toArray());
+        $addSensor = thresholds::create($request->toArray());
         return response()->json(["message" => "Sensor Add Successfully", "status" => 200]);
 
         // $user = User::create($request->toArray());  $validator->errors()->all()
 
 
     }
+    //delete a sensor
+    public function deleteSensor(Request $request){
+        try{
+            thresholds::where('sensor_name', $request->sensor_name)->delete();
+            return response()->json(["message"=>$request->sensor_name." Sensor Deleted","status"=>"deleted" ]);
+        }catch(Exception $exception){
+            return response()->json(["message"=>$exception->getMessage(),"status"=>406 ]);
+
+        }
+
+    }
     //get sensor names types list of dropdown
     public function getSensors()
     {
         $sensorArray = array();
-        $sensors = sensor_controller::get();
+        $sensors = thresholds::get();
 
         foreach ($sensors as $result) {
             $data = [
-                "name" => $result->name,
-                "display_name" => $result->display_name,
-                "status" => $result->status
+                // "name" => $result->name,
+                "sensor_name" => $result->sensor_name,
+                "description" => $result->description
             ];
             array_push($sensorArray, $data);
         }
@@ -76,6 +87,7 @@ class thresholdsController extends Controller
             }
 
             $threshold = thresholds::where('sensor_name', $request->sensor_name)->get('id');
+
             $user = User::where('email', $request->email)->get('id');
             foreach ($threshold as $result) {
                 $thresholdID = $result->id;
@@ -84,17 +96,19 @@ class thresholdsController extends Controller
                 $userID = $result->id;
                 $userName = $result->first_name;
             }
-            
- 
-            if($request->email != NULL){
-                contactToThreshold::create([
-                    "contact_id" => $userID,
-                    "threshold_id" => $thresholdID,
-                    "notify_type" =>$request->notify_type,
-                    'notify_interval' => $request->notify_interval	
-                ]);
+            if(!$threshold){
+
+            }else{
+                if($request->email != NULL){
+                    contactToThreshold::create([
+                        "contact_id" => $userID,
+                        "threshold_id" => $thresholdID,
+                        "notify_type" =>$request->notify_type,
+                        'notify_interval' => $request->notify_interval	
+                    ]);
+                }
             }
- 
+           
 
             // $user = User::create($request->toArray());
             $result = thresholds::where('sensor_name', $request->sensor_name)->update([

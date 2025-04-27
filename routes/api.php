@@ -63,6 +63,10 @@ Route::group([
     Route::get('/show_users_mail',[UserManageController::class,'showUsersEmail']);
     //show user's details
     Route::post('/show_user_details',[UserManageController::class,'showUserDetails']);
+    //show all user's details
+    Route::get('/all_users',[UserManageController::class,'showAllUserDetails']);
+    //delete user
+    Route::post('/delete_user',[UserManageController::class,'deleteUser']);   
     //pass data to rabbitMq start
     //light on
     Route::get('/turnOnLight',[PassToQController::class,'lightOn']);
@@ -136,6 +140,8 @@ Route::group([
      // Route::post('/deleteQueue', [QueueMakerController::class, 'ConfirmForceDeleteQueue']);
     //add sensor
     Route::post('/add_senors',[thresholdsController::class,'AddSensors']);
+    //delet sensor
+    Route::post('/delete_sensor',[thresholdsController::class,'deleteSensor']);
     //get sensor names
     Route::get('/sensor_name',[thresholdsController::class,'getSensors']);
      //add thresholds values

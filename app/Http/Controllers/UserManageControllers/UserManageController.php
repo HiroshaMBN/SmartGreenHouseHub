@@ -36,6 +36,30 @@ class UserManageController extends Controller
         return response()->json(["message" => $users, "status" => 200]);
     }
 
+    //show all users
+    public function showAllUserDetails()
+    {
+  
+     try{
+        $users = User::get();
+        return response()->json(["message" => $users, "status" => 200]);
+     }catch(Exception $exception ){
+        return response()->json(["message" => $exception->getMessage(), "status" => 406]);
+
+     }
+    }
+    //delete users
+    public function deleteUser(Request $request){
+        try{
+            User::where('email', $request->email)->delete();
+            return response()->json(["message" => $request->email." deleted successfully.", "status" => 200]);
+    
+        }catch(Exception $exception){
+            return response()->json(["message" => $exception->getMessage(), "status" => 406]);
+
+        }
+    }
+
 
     public function updateUserProfile(Request $request)
     {
