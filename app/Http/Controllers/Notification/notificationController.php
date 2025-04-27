@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+use App\Mail\NotificationEmail;
+use Illuminate\Support\Facades\Mail;
+
 class notificationController extends Controller
 {
   //alert for temperature
@@ -173,6 +176,37 @@ class notificationController extends Controller
       ->where('thresholds.sensor_name', '=', $sensor_name)
       ->get();
     return $contactToThreshold;
+  }
+  //sms
+  public function sendNotificationUsingGammuSmsService()
+  {
+
+
+
+    $phoneNumber = escapeshellarg('+94755557130');
+    $message = escapeshellarg("SMS by Laravel");
+    $scriptPath = '/var/www/html/SmartGreenHouseHub/config/send_sms.sh';
+    $command = "/bin/bash $scriptPath $phoneNumber $message";
+
+    $output = null;
+    $resultCode = null;
+    exec($command, $output, $resultCode);
+
+    Log::channel('custom')->info("Gammu SMS Service" . ':Notification: ' . implode("\n", $output) . " " . $resultCode);
+  }
+
+  public function sendNotificationEmailService()
+  {
+    $user = "malithhirosha@gmail.com";
+    $details = [
+      'name' => 'User Name',
+      'message' => 'This is a test message.'
+    ];
+
+    // Send the email
+    Mail::to($user)->send(new NotificationEmail($details));
+
+    return response()->json(['message' => 'Email sent successfully!']);
   }
 
   //send temperature notification 

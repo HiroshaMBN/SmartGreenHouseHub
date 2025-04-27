@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('thresholds', function (Blueprint $table) {
             $table->id();
             $table->string('sensor_name');
+            $table->bool('is_automate');
             $table->string('normal');
             $table->string('warning');
             $table->string('critical');

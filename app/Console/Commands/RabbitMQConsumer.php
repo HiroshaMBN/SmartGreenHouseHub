@@ -6,11 +6,13 @@ use Exception;
 use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use App\Models\thresholds;
 use App\Events\SensorDataUpdated;
 use App\Events\AirQualityEvent;
 use App\Events\ultrasonicWaterLevel;
 use App\Events\soilSensorEvent;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\RabbitMq\PublishToMessageToNodemcu;
 
 class RabbitMQConsumer extends Command
 {
@@ -27,6 +29,7 @@ class RabbitMQConsumer extends Command
   public function handle()
   {
     try {
+
       $connection = new AMQPStreamConnection(
         // env('RABBITMQ_HOST'),
         // env('RABBITMQ_PORT'),
@@ -56,18 +59,17 @@ class RabbitMQConsumer extends Command
 
       // echo " [*] Waiting for messages. To exit press CTRL+C\n";
       $callback = function ($msg) {
+      $RabbitMqControlInstance = new PublishToMessageToNodemcu();
+
         // echo ' [x] Received ', $msg->body, "\n";
         $data = json_decode($msg->body, true);
         // broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
-
 
         if (isset($data['temperature']) && isset($data['humidity'])) {
           // Broadcast the event with temperature and humidity data
           broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
           // broadcast(new SensorDataUpdated($msg->body ));
         } else {
-          echo $data['temperature'];
-          echo $data['humidity'];
           Log::error('Invalid data received from RabbitMQ: ' . $msg->body);
         }
 
@@ -77,6 +79,19 @@ class RabbitMQConsumer extends Command
           'temperature' => $data['temperature'],
           'humidity' => $data['humidity'],
         ]);
+        $tmpCriticalThresholdValue = thresholds::where('sensor_name', 'dht11-tmp')->pluck('critical')->first();
+        $tmpCriticalThresholdIsAutomate = thresholds::where('sensor_name', 'dht11-tmp')->pluck('is_automate')->first();
+      
+        if ($tmpCriticalThresholdIsAutomate == 1) {
+          if ($tmpCriticalThresholdValue <= $data['temperature']) {
+            echo "fan on";
+            $RabbitMqControlInstance->exhaustFanAutomated("ON");
+          } else {
+            echo "Temperature is coll down and fan off";
+            $RabbitMqControlInstance->exhaustFanAutomated("OFF");
+          }
+        }
+
         echo "Update climate";
         // broadcast(new \App\Events\SensorDataReceived($msg->body ));
       };

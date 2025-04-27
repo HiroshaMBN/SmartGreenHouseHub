@@ -164,6 +164,7 @@ Route::group([
     Route::get('/send_notification_air',[notificationController::class,'airQualityNotification']);
     Route::get('/send_notification_soil',[notificationController::class,'soilQualityNotification']);
     Route::post('/contact_to_notify',[notificationController::class,'contactToSensorNotification']);
+    Route::get('/testmail',[notificationController::class,'sendNotificationEmailService']);
         
     Route::get('/send_notification_humidity',[notificationController::class,'sendHumidityNotification']);
   
