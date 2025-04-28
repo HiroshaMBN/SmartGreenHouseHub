@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bool('is_automate');
             $table->string('normal');
             $table->string('warning');
+            $table->string('description');
             $table->string('critical');
             $table->string('is_enable_notify');
             $table->bool('is_normal');
