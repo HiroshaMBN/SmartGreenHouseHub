@@ -77,25 +77,80 @@ class StocksController extends Controller
     //update fertilization stock
     public function updateFertilizationStock(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            "fertilize_name" => "required",
-            "availability" => "required",
-            "nextStock" => "string",
-            "unitPrice" => "",
-            "stockLevel" => "string"
-        ]);
+
+        var_dump($request->qty);
+        var_dump($request->unitPrice);
+        die();
+        try {
+            $validator = Validator::make($request->all(), [
+                "id" => "required",
+                "fertilize_name" => "",
+                "availability" => "",
+                "unitType" => "",
+                "nextStock" => "",
+                "unitPrice" => "",
+                "qty" => "",
+                "stockLevel" => ""
+            ]);
+
+            fertilization::where('id', $request->id)->update([
+                'fertilize_name' => $request->fertilize_name,
+                'availability' => $request->availability,
+                'unit_type' => $request->unitType,
+                'unit_price' => $request->unitPrice,
+                'next_stock_date' => $request->nextStock,
+                'stock_level' => $request->stockLevel,
+                'qty' => $request->qty,
+                'total' => ($request->qty) * ($request->unitPrice)
+            ]);
+            return response()->json(["message"=>"Fertilization stocks updated","status"=>200]);
+        } catch (Exception $exception) {
+            return response()->json(["message" => $exception->getMessage(), "status" => 406]);
+        }
     }
 
-     //show fertilization stocks
-    public function showFertilizationStocks(){
+
+    //update seed stock
+    public function updateSeedStock(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                "id" => "required",
+                "fertilize_name" => "",
+                "availability" => "",
+                "unitType" => "",
+                "nextStock" => "",
+                "unitPrice" => "",
+                "qty" => "",
+                "stockLevel" => ""
+            ]);
+
+            seeds::where('id', $request->id)->update([
+                'fertilize_name' => $request->fertilize_name,
+                'availability' => $request->availability,
+                'unit_type' => $request->unitType,
+                'unit_price' => $request->unitPrice,
+                'next_stock_date' => $request->nextStock,
+                'stock_level' => $request->stockLevel,
+                'qty' => $request->qty,
+                'total' => ($request->qty) * ($request->unitPrice)
+            ]);
+            return response()->json(["message"=>"Fertilization stocks updated","status"=>200]);
+        } catch (Exception $exception) {
+            return response()->json(["message" => $exception->getMessage(), "status" => 406]);
+        }
+    }
+
+    //show fertilization stocks
+    public function showFertilizationStocks()
+    {
         $result = fertilization::all();
-        return response()->json(["message"=>$result,"status"=>200]);
-       
+        return response()->json(["message" => $result, "status" => 200]);
     }
     //show seeds stocks
-    public function showSeedStocks(){
+    public function showSeedStocks()
+    {
         $result = seeds::all();
-        return response()->json(["message"=>$result,"status"=>200]);
-
+        return response()->json(["message" => $result, "status" => 200]);
     }
 }

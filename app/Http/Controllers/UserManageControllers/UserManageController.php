@@ -39,24 +39,29 @@ class UserManageController extends Controller
     //show all users
     public function showAllUserDetails()
     {
-  
-     try{
-        $users = User::get();
-        return response()->json(["message" => $users, "status" => 200]);
-     }catch(Exception $exception ){
-        return response()->json(["message" => $exception->getMessage(), "status" => 406]);
 
-     }
+        try {
+            $users = User::get();
+            return response()->json(["message" => $users, "status" => 200]);
+        } catch (Exception $exception) {
+            return response()->json(["message" => $exception->getMessage(), "status" => 406]);
+        }
     }
     //delete users
-    public function deleteUser(Request $request){
-        try{
+    public function deleteUser(Request $request)
+    {
+        try {
+            $checkSuperAdmin = User::where('email', $request->email)->get('type');
+            foreach ($checkSuperAdmin as $result) {
+                $superAdmin = $result->type;
+            }
+            if ($superAdmin == "super_admin") {
+                return response()->json(["message" => "Super admin can't delete", "status" => "superAdmin_error"]);
+            }
             User::where('email', $request->email)->delete();
-            return response()->json(["message" => $request->email." deleted successfully.", "status" => 200]);
-    
-        }catch(Exception $exception){
+            return response()->json(["message" => $request->email . " deleted successfully.", "status" => 200]);
+        } catch (Exception $exception) {
             return response()->json(["message" => $exception->getMessage(), "status" => 406]);
-
         }
     }
 
@@ -67,6 +72,7 @@ class UserManageController extends Controller
         $lastName = $request->last_name;
         $email = $request->email;
         $mobile = $request->mobile;
+        $activation = $request->is_active;
 
         try {
             // Check if the user is logged in
@@ -75,10 +81,7 @@ class UserManageController extends Controller
                 return response()->json(["message" => "Empty User"]);
             }
 
-            // Check if the user has permission to update profile
-            if ($request->user()->tokenCan('read-profile')) {
                 Log::channel('custom')->info(Auth::user()->email . ':update user profile:' . 'User Profile Updated Successfully');
-
                 // Get the user ID from the email
                 $user = User::where('email', $email)->first();
                 if (!$user) {
@@ -93,20 +96,19 @@ class UserManageController extends Controller
                     users.first_name = ?, 
                     users.last_name = ?, 
                     contacts.mobile = ?, 
-                    contacts.email = ?
-                    WHERE users.id = ?
-            ", [
+                    users.email = ?,
+                    users.is_active = ?
+                    WHERE users.id = ?", [
                     $firstName,
                     $lastName,
                     $mobile,
                     $email,
+                    $activation,
                     $user->id
                 ]);
 
                 return response()->json(["message" => "User Profile Updated Successfully"], 200);
-            } else {
-                abort(403, 'Unauthorized');
-            }
+            
         } catch (Exception $exception) {
             return response()->json(["message" => $exception->getMessage()], 406);
         }
@@ -123,22 +125,22 @@ class UserManageController extends Controller
             if ($activeState == 1) {
                 if ($state['is_active'] == $activeState) {
                     Log::channel('custom')->warning(Auth::user()->email . ':User activation:' . 'User is already active');
-                    return response()->json(["message" => $email." is already active","status" => "alActive"]);
+                    return response()->json(["message" => $email . " is already active", "status" => "alActive"]);
                     exit();
                 }
                 User::where('email', $email)->update(['is_active' => $activeState]);
                 Log::channel('custom')->info(Auth::user()->email . ':User activation:' . 'User activated successfully');
-                return response()->json(["message" => $email." is activated successfully", "status" => "active"]);
+                return response()->json(["message" => $email . " is activated successfully", "status" => "active"]);
             } else if ($activeState == 0) {
                 if ($state['is_active'] == $activeState) {
 
                     Log::channel('custom')->warning(Auth::user()->email . ':User activation:' . 'User is already deactivated');
-                    return response()->json(["message" => $email." is already deactivated", "status" => "AlDeactivate"]);
+                    return response()->json(["message" => $email . " is already deactivated", "status" => "AlDeactivate"]);
                     exit();
                 }
                 User::where('email', $email)->update(['is_active' => $activeState]);
                 Log::channel('custom')->info(Auth::user()->email . ':User activation:' . 'User deactivated successfully');
-                return response()->json(["message" => $email." is deactivated successfully", "status" => "deactivated"]);
+                return response()->json(["message" => $email . " is deactivated successfully", "status" => "deactivated"]);
             }
         } catch (Exception $exception) {
             Log::channel('custom')->error(Auth::user()->email . ':User activation:' . $exception->getMessage());
@@ -147,15 +149,15 @@ class UserManageController extends Controller
     }
 
     //use activation status
-    public function activationStatus(Request $request){
-        try{
+    public function activationStatus(Request $request)
+    {
+        try {
             $email = $request->email;
             $result = User::where('email', $email)->first();
-            $status = ($result->is_active ==1)?"Activated":"Deactivated";
-            return response()->json(["message"=>$email." is currently ".$status,"status"=>200]);
-        }catch(Exception $exception){
-            return response()->json(["message"=>$exception->getMessage()]);
-
+            $status = ($result->is_active == 1) ? "Activated" : "Deactivated";
+            return response()->json(["message" => $email . " is currently " . $status, "status" => 200]);
+        } catch (Exception $exception) {
+            return response()->json(["message" => $exception->getMessage()]);
         }
     }
 

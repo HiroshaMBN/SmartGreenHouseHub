@@ -113,6 +113,7 @@ class PublishToMessageToNodemcu extends Controller
     { #D5
         try {
             $messageData = $request->input('message_data', []);
+            $objectName = "";
             $success = RabbitMQConsumer::greenHouseWaterMotor(env('CONTROL_QUEUE'), $messageData);
             if ($success) {
                 if ($messageData == "ON") {

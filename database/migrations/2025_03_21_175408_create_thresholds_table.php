@@ -16,15 +16,15 @@ return new class extends Migration
         Schema::create('thresholds', function (Blueprint $table) {
             $table->id();
             $table->string('sensor_name');
-            $table->bool('is_automate');
-            $table->string('normal');
-            $table->string('warning');
+            $table->boolean('is_automate')->default(1);
+            $table->string('normal')->default(0);
+            $table->string('warning')->default(0);
             $table->string('description');
-            $table->string('critical');
+            $table->string('critical')->default(0);
             $table->string('is_enable_notify');
-            $table->bool('is_normal');
-            $table->bool('is_warning');
-            $table->bool('is_critical');
+            $table->boolean('is_normal')->default(0);
+            $table->boolean('is_warning')->default(0);
+            $table->boolean('is_critical')->default(0);
             $table->integer('stop_limit')->default(1);
             $table->string('notify_type');
             $table->integer('count');

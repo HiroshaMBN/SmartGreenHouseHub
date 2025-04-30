@@ -23,7 +23,7 @@ class SuperAdmin extends Seeder
         'last_name' => 'admin',
         'email' => 'superadmin@greenhouse.lk',
         'is_active' =>1,
-        'type'=>'admin',
+        'type'=>'super_admin',
         'password' => bcrypt('admin123'),
     ]);
     }

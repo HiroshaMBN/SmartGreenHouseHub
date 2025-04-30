@@ -36,166 +36,169 @@ use Laravel\Passport\Passport;
 //     return $request->user();
 // });
 // Passport::routes();
-Route::post('/Register',[AuthController::class, 'userRegister']);
-Route::post('/login',[AuthController::class, 'LogInUser'])->name('login');
+Route::post('/Register', [AuthController::class, 'userRegister']);
+Route::post('/login', [AuthController::class, 'LogInUser'])->name('login');
 // Route::post('/logOut',[AuthController::class, 'LogOut']);
 
 // Passport::routes();
 Route::group([
-    'as' => 'passport.',
-    'prefix' => 'auth',
-    'middleware' => ['auth:api'],
-    'namespace' => '\Laravel\Passport\Http\Controllers',
+  'as' => 'passport.',
+  'prefix' => 'auth',
+  'middleware' => ['auth:api'],
+  'namespace' => '\Laravel\Passport\Http\Controllers',
 ], function () {
-    Route::post('/LogOut',[AuthController::class, 'LogOut']);
-    Route::post('/CreateIotInstance',[InstanceController::class,'Instance']);
-    //get instance details
-    Route::get('/InstanceDetails',[ObjectController::class,'GetInstances']);
-    //save new sensor
-    Route::post('/SaveSensor',[ObjectController::class,'AddNewSensor']);
-    //update user profile
-    // Route::put('/updateUsers',[UserManageController::class,'updateUserProfile']);
-    Route::put('/updateUsers',[UserManageController::class,'updateUserProfile'])->middleware('scope:read-profile');
-    Route::put('/userAccountsActivate',[UserManageController::class,'updateUserStatus']);
-    Route::put('/userAccountsDeactivate',[UserManageController::class,'deactivateUser']);
-    Route::post('/getUserStatus',[UserManageController::class,'activationStatus']);
-    //show users's email
-    Route::get('/show_users_mail',[UserManageController::class,'showUsersEmail']);
-    //show user's details
-    Route::post('/show_user_details',[UserManageController::class,'showUserDetails']);
-    //show all user's details
-    Route::get('/all_users',[UserManageController::class,'showAllUserDetails']);
-    //delete user
-    Route::post('/delete_user',[UserManageController::class,'deleteUser']);   
-    //pass data to rabbitMq start
-    //light on
-    Route::get('/turnOnLight',[PassToQController::class,'lightOn']);
-    //light off
-    Route::get('/turnOffLight',[PassToQController::class,'lightOff']);
-    Route::post('/receiveSensorData',[PassToQController::class,'receiveSensorData']);
-    
-    //pass data to rabbitMq end
+  Route::post('/user_register', [AuthController::class, 'userRegister']);
+
+  Route::post('/LogOut', [AuthController::class, 'LogOut']);
+  Route::post('/CreateIotInstance', [InstanceController::class, 'Instance']);
+  //get instance details
+  Route::get('/InstanceDetails', [ObjectController::class, 'GetInstances']);
+  //save new sensor
+  Route::post('/SaveSensor', [ObjectController::class, 'AddNewSensor']);
+  //update user profile
+  // Route::put('/updateUsers',[UserManageController::class,'updateUserProfile']);
+  Route::put('/updateUsers', [UserManageController::class, 'updateUserProfile']);
+  Route::put('/userAccountsActivate', [UserManageController::class, 'updateUserStatus']);
+  Route::put('/userAccountsDeactivate', [UserManageController::class, 'deactivateUser']);
+  Route::post('/getUserStatus', [UserManageController::class, 'activationStatus']);
+  //show users's email
+  Route::get('/show_users_mail', [UserManageController::class, 'showUsersEmail']);
+  //show user's details
+  Route::post('/show_user_details', [UserManageController::class, 'showUserDetails']);
+  //show all user's details
+  Route::get('/all_users', [UserManageController::class, 'showAllUserDetails']);
+  //delete user
+  Route::post('/delete_user', [UserManageController::class, 'deleteUser']);
+  //pass data to rabbitMq start
+  //light on
+  Route::get('/turnOnLight', [PassToQController::class, 'lightOn']);
+  //light off
+  Route::get('/turnOffLight', [PassToQController::class, 'lightOff']);
+  Route::post('/receiveSensorData', [PassToQController::class, 'receiveSensorData']);
+
+  //pass data to rabbitMq end
 
 
-    //read temperature values
-    Route::post('/readTemperature',[ClimateController::class,'temperature']);
-    //read humidity values
-    Route::post('/readHumidity',[ClimateController::class,'humidity']);
-    //read both temperature and humidity
-    Route::post('/readTemHumidity',[ClimateController::class,'bothTemHumidity']);
+  //read temperature values
+  Route::post('/readTemperature', [ClimateController::class, 'temperature']);
+  //read humidity values
+  Route::post('/readHumidity', [ClimateController::class, 'humidity']);
+  //read both temperature and humidity
+  Route::post('/readTemHumidity', [ClimateController::class, 'bothTemHumidity']);
 
-    //highest humidity in a month
-    Route::post('/maxHumidity',[ClimateController::class,'highestNumberOFHumidityRecord']);
-    //highest Temperature in a month
-    Route::post('/maxTemperature',[ClimateController::class,'highestNumberOFTemperatureRecord']);
-    // 
+  //highest humidity in a month
+  Route::post('/maxHumidity', [ClimateController::class, 'highestNumberOFHumidityRecord']);
+  //highest Temperature in a month
+  Route::post('/maxTemperature', [ClimateController::class, 'highestNumberOFTemperatureRecord']);
+  // 
 
-    //get sensor data for testing purpose
-    Route::get('/sensorData',[ClimateController::class,'index']);
-    //air quality
-    Route::post('/mq2AirQuality',[AirConditionStatusController::class,'mq2Co2']);
+  //get sensor data for testing purpose
+  Route::get('/sensorData', [ClimateController::class, 'index']);
+  //air quality
+  Route::post('/mq2AirQuality', [AirConditionStatusController::class, 'mq2Co2']);
 
-     //RabbitMq intergration
-    //list vhost
-    Route::get('/getVhosts',[RabbitMqConfiguration::class,'ListVHosts']);
-    //make vhost
-    Route::post('/makeHost',[RabbitMqConfiguration::class,'MakeVHost']);
-    //delete v host
-    Route::post('/deleteVHost',[RabbitMqConfiguration::class,'DeleteVhost']);
-    //get rabbitmq users
-    Route::get('/getRabbitMqUsers',[RabbitMqConfiguration::class,'UserList']);
-    //creata a rabbitmq user with password
-    Route::post('/createAUser',[RabbitMqConfiguration::class,'CreateUser']);
-    //add Tags
-    Route::post('/addTags',[RabbitMqConfiguration::class,'AddTags']);
-    //can access virtual host
-    Route::post('/accessVhost',[RabbitMqConfiguration::class,'CanAccessVirtualHosts']);
-    //*restart rabbitmq
-    Route::get('/restartRabbitMq',[RabbitMqConfiguration::class,'RestartRabbitMq']);
-    //create a exchnage
-    Route::post('/createExchange',[QueueNexchangeController::class,'MakeExchange']);
-    //create a queue
-    Route::post('/createQueue',[QueueNexchangeController::class,'MakeQueue']);
-    //delete exchange
-    Route::post('/deleteExchange',[QueueNexchangeController::class,'DeleteExchange']);
+  //RabbitMq intergration
+  //list vhost
+  Route::get('/getVhosts', [RabbitMqConfiguration::class, 'ListVHosts']);
+  //make vhost
+  Route::post('/makeHost', [RabbitMqConfiguration::class, 'MakeVHost']);
+  //delete v host
+  Route::post('/deleteVHost', [RabbitMqConfiguration::class, 'DeleteVhost']);
+  //get rabbitmq users
+  Route::get('/getRabbitMqUsers', [RabbitMqConfiguration::class, 'UserList']);
+  //creata a rabbitmq user with password
+  Route::post('/createAUser', [RabbitMqConfiguration::class, 'CreateUser']);
+  //add Tags
+  Route::post('/addTags', [RabbitMqConfiguration::class, 'AddTags']);
+  //can access virtual host
+  Route::post('/accessVhost', [RabbitMqConfiguration::class, 'CanAccessVirtualHosts']);
+  //*restart rabbitmq
+  Route::get('/restartRabbitMq', [RabbitMqConfiguration::class, 'RestartRabbitMq']);
+  //create a exchnage
+  Route::post('/createExchange', [QueueNexchangeController::class, 'MakeExchange']);
+  //create a queue
+  Route::post('/createQueue', [QueueNexchangeController::class, 'MakeQueue']);
+  //delete exchange
+  Route::post('/deleteExchange', [QueueNexchangeController::class, 'DeleteExchange']);
 
-    //soil moisture sensor data
-    Route::post('/soilLevel',[SoilLevelController::class,'SoilMoistureLevel']);
-    
-    //rabbitmq overview
-    Route::get('/rabbitmq_overview',[RabbitMqConfiguration::class,'overView']);
-    //rabbitmq connection list
-    // 
-    Route::get('/rabbitmq_connections',[RabbitMqConfiguration::class,'showConnection']);
+  //soil moisture sensor data
+  Route::post('/soilLevel', [SoilLevelController::class, 'SoilMoistureLevel']);
+
+  //rabbitmq overview
+  Route::get('/rabbitmq_overview', [RabbitMqConfiguration::class, 'overView']);
+  //rabbitmq connection list
+  // 
+  Route::get('/rabbitmq_connections', [RabbitMqConfiguration::class, 'showConnection']);
 
 
 
-     //Normal delete
-     Route::post('/deleteQueue',[QueueNexchangeController::class,'DeleteQueue']);
-     //delete queue force method request
-     Route::get('/ReqForceDeleteQueue', [QueueNexchangeController::class, 'RequestForceDeleteQueue']);
-     // delete queue force confirmed
-     Route::post('/confirmedDeleteQueue',[QueueNexchangeController::class,'QDeleteConfirmed']);
-     //delete queue if empty
-     // Route::post('/deleteQueue', [QueueMakerController::class, 'ConfirmForceDeleteQueue']);
-    //add sensor
-    Route::post('/add_senors',[thresholdsController::class,'AddSensors']);
-    //delet sensor
-    Route::post('/delete_sensor',[thresholdsController::class,'deleteSensor']);
-    //get sensor names
-    Route::get('/sensor_name',[thresholdsController::class,'getSensors']);
-     //add thresholds values
-    Route::post('/SensorThresholds',[thresholdsController::class,'SensorThresholds']);
-    //get temperature thresholds values
-    Route::get('/temperature_threshold',[thresholdsController::class,'temperatureThreshold']);
-    //update notification types
-    Route::post('/update_notification',[thresholdsController::class,'updateNotifications']);
-    //get threshold
-    Route::get('/get_threshold_values',[thresholdsController::class,'showThreshold']);
-    //notification
-    Route::get('/tmp_alert',[notificationController::class,'temperatureAlert']);
-    //enable whole notification at once 
-    Route::post('/enable_notifications',[notificationController::class,'enableNotifications']);
-     //read all notification
-    Route::post('/readNotifications',[notificationController::class,'readNotification']);
-    //delete notification users
-    Route::post('/delete_notify_users',[notificationController::class,'deleteContactFromNotification']);
+  //Normal delete
+  Route::post('/deleteQueue', [QueueNexchangeController::class, 'DeleteQueue']);
+  //delete queue force method request
+  Route::get('/ReqForceDeleteQueue', [QueueNexchangeController::class, 'RequestForceDeleteQueue']);
+  // delete queue force confirmed
+  Route::post('/confirmedDeleteQueue', [QueueNexchangeController::class, 'QDeleteConfirmed']);
+  //delete queue if empty
+  // Route::post('/deleteQueue', [QueueMakerController::class, 'ConfirmForceDeleteQueue']);
+  //add sensor
+  Route::post('/add_senors', [thresholdsController::class, 'AddSensors']);
+  //delet sensor
+  Route::post('/delete_sensor', [thresholdsController::class, 'deleteSensor']);
+  //get sensor names
+  Route::get('/sensor_name', [thresholdsController::class, 'getSensors']);
+  //add thresholds values
+  Route::post('/SensorThresholds', [thresholdsController::class, 'SensorThresholds']);
+  //get temperature thresholds values
+  Route::get('/temperature_threshold', [thresholdsController::class, 'temperatureThreshold']);
+  //update notification types
+  Route::post('/update_notification', [thresholdsController::class, 'updateNotifications']);
+  //get threshold
+  Route::get('/get_threshold_values', [thresholdsController::class, 'showThreshold']);
+  //notification
+  Route::get('/tmp_alert', [notificationController::class, 'temperatureAlert']);
+  //enable whole notification at once 
+  Route::post('/enable_notifications', [notificationController::class, 'enableNotifications']);
+  //read all notification
+  Route::post('/readNotifications', [notificationController::class, 'readNotification']);
+  //delete notification users
+  Route::post('/delete_notify_users', [notificationController::class, 'deleteContactFromNotification']);
 
-    //get register's users list for the set contact
-    Route::get('reg_users' ,[ContactController::class,'userList']);
-    //update contact table
-    Route::post('/update_contact',[ContactController::class,'addUserContact']);
-    //send notification in temperature
-    Route::get('/send_notification_temperature',[notificationController::class,'sendTemperatureNotification']);
-    Route::get('/send_notification_air',[notificationController::class,'airQualityNotification']);
-    Route::get('/send_notification_soil',[notificationController::class,'soilQualityNotification']);
-    Route::post('/contact_to_notify',[notificationController::class,'contactToSensorNotification']);
-    Route::get('/testmail',[notificationController::class,'sendNotificationEmailService']);
-        
-    Route::get('/send_notification_humidity',[notificationController::class,'sendHumidityNotification']);
-  
+  //get register's users list for the set contact
+  Route::get('reg_users', [ContactController::class, 'userList']);
+  //update contact table
+  Route::post('/update_contact', [ContactController::class, 'addUserContact']);
+  //send notification in temperature
+  Route::get('/send_notification_temperature', [notificationController::class, 'sendTemperatureNotification']);
+  Route::get('/send_notification_air', [notificationController::class, 'airQualityNotification']);
+  Route::get('/send_notification_soil', [notificationController::class, 'soilQualityNotification']);
+  Route::post('/contact_to_notify', [notificationController::class, 'contactToSensorNotification']);
+  Route::get('/testmail', [notificationController::class, 'sendNotificationEmailService']);
+
+  Route::get('/send_notification_humidity', [notificationController::class, 'sendHumidityNotification']);
+
   //activity controller
-    Route::get('/error_log',[ActivityController::class,'errorLogToDB']);
-    Route::get('/info_log',[ActivityController::class,'infoLogToDB']);
-    Route::post('/show_error_log',[ActivityController::class,'showErrorLogToDb']);
-    Route::post('/show_info_log',[ActivityController::class,'showInfoLogToDb']);
-    Route::get('/say_getGreeting',[ActivityController::class,'getGreeting']);
+  Route::get('/error_log', [ActivityController::class, 'errorLogToDB']);
+  Route::get('/info_log', [ActivityController::class, 'infoLogToDB']);
+  Route::post('/show_error_log', [ActivityController::class, 'showErrorLogToDb']);
+  Route::post('/show_info_log', [ActivityController::class, 'showInfoLogToDb']);
+  Route::get('/say_getGreeting', [ActivityController::class, 'getGreeting']);
 
 
-    //stocks
-    Route::post('/add_fertilization_stocks',[StocksController::class,'fertilizationStocks']);
-    Route::post('/add_seeds_stocks',[StocksController::class,'seedStocks']);
-    Route::get('/show_fertilization_stocks',[StocksController::class,'showFertilizationStocks']);
-    Route::get('/show_seeds_stocks',[StocksController::class,'showSeedStocks']);
-    //publish message
-    Route::post('/publish_on_off_light_one',[PublishToMessageToNodemcu::class,'lightOne']);
-    Route::post('/publish_on_off_light_two',[PublishToMessageToNodemcu::class,'lightTwo']);
-    Route::post('/publish_on_off_light_three',[PublishToMessageToNodemcu::class,'lightThree']);
-    Route::post('/publish_on_off_exhaust_fan',[PublishToMessageToNodemcu::class,'exhaustFan']);
-    Route::post('/publish_on_off_water_motor',[PublishToMessageToNodemcu::class,'waterTank']);
-    //run command in terminal
-    Route::get('/terminal',[RabbitMqConfiguration::class,'Terminal']);
-
+  //stocks
+  Route::post('/add_fertilization_stocks', [StocksController::class, 'fertilizationStocks']);
+  Route::post('/add_seeds_stocks', [StocksController::class, 'seedStocks']);
+  Route::get('/show_fertilization_stocks', [StocksController::class, 'showFertilizationStocks']);
+  Route::get('/show_seeds_stocks', [StocksController::class, 'showSeedStocks']);
+  Route::put('/update_fertilization_stocks', [StocksController::class, 'updateFertilizationStock']);
+  
+  //publish message
+  Route::post('/publish_on_off_light_one', [PublishToMessageToNodemcu::class, 'lightOne']);
+  Route::post('/publish_on_off_light_two', [PublishToMessageToNodemcu::class, 'lightTwo']);
+  Route::post('/publish_on_off_light_three', [PublishToMessageToNodemcu::class, 'lightThree']);
+  Route::post('/publish_on_off_exhaust_fan', [PublishToMessageToNodemcu::class, 'exhaustFan']);
+  Route::post('/publish_on_off_water_motor', [PublishToMessageToNodemcu::class, 'waterTank']);
+  //run command in terminal
+  Route::get('/terminal', [RabbitMqConfiguration::class, 'Terminal']);
 })->middleware('auth:api');
 
 // Route::put('/updateUsers', [UserManageController::class, 'updateUserProfile'])

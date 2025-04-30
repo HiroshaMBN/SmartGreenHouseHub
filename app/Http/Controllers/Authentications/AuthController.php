@@ -27,6 +27,8 @@ class AuthController extends Controller
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:6',
                 'mobile' => 'string|min:10',
+                'type'=>'required',
+                'is_active' =>''
             ]);
             $request['instance_id'] = 1;
             //validation fails
