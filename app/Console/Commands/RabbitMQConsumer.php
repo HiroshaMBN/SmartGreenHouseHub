@@ -36,7 +36,7 @@ class RabbitMQConsumer extends Command
         // env('RABBITMQ_USERNAME'),
         // env('RABBITMQ_PASSWORD'),
         // env('RABBITMQ_VHOST')
-        '192.168.8.104',
+        '10.128.1.52',
         5672,
         'guest',
         'guest',

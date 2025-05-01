@@ -13,13 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('contact_to_thresholds', function (Blueprint $table) {
-            $table->integer('contact_id');
-            $table->integer('threshold_id');
-            $table->string('notify_type');
-            $table->string('notify_interval');
+        Schema::create('controllers', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
-            $table->primary(['contact_id', 'threshold_id', 'notify_type', 'notify_interval']);
         });
     }
 
@@ -30,6 +26,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('contact_to_thresholds');
+        Schema::dropIfExists('controllers');
     }
 };

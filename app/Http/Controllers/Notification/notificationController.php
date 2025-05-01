@@ -1950,7 +1950,13 @@ class notificationController extends Controller
         "thresholds" => $result->sensor_name,
       ];
     }
-    return $contactDetails;
+    if($contactDetails){
+      return response()->json(["message"=>$contactDetails,"status"=>200]);
+    }else{
+      return response()->json(["message"=>"Not set notifications for ".$request->email,"status"=>404]);
+
+    }
+   
   }
   public function deleteContactFromNotification(Request $request)
   {

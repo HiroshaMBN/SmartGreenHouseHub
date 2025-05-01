@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string("unit_type")->nullable();
             $table->date("next_stock_date")->nullable();
             $table->float("unit_price")->nullable();
+            $table->float("qty")->nullable();
             $table->float("total")->nullable();
             $table->string("stock_level")->nullable();
             $table->timestamps();
