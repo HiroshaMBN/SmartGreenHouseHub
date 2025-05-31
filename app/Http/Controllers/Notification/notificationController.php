@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Mail\NotificationEmail;
 use Illuminate\Support\Facades\Mail;
+use Twilio\Rest\Client;
 
 class notificationController extends Controller
 {
@@ -1950,13 +1951,11 @@ class notificationController extends Controller
         "thresholds" => $result->sensor_name,
       ];
     }
-    if($contactDetails){
-      return response()->json(["message"=>$contactDetails,"status"=>200]);
-    }else{
-      return response()->json(["message"=>"Not set notifications for ".$request->email,"status"=>404]);
-
+    if ($contactDetails) {
+      return response()->json(["message" => $contactDetails, "status" => 200]);
+    } else {
+      return response()->json(["message" => "Not set notifications for " . $request->email, "status" => 404]);
     }
-   
   }
   public function deleteContactFromNotification(Request $request)
   {
@@ -1981,5 +1980,25 @@ class notificationController extends Controller
 
 
     return  $result;
+  }
+
+
+  public function testSms()
+  {
+   try{
+     $sid = 'AC56f228c8f785bfa25c52dda7309ca941';
+    $token = 'VSV8JAPHHDMCET5H5Z9FJ9UQ';
+    $twilio = new Client($sid, $token);
+ 
+    $message = $twilio->messages->create(
+      '+94762759300', // to
+      [
+        'from' => '+94755557130', // your Twilio number
+        'body' => 'Hello from Laravel and Twilio!'
+      ]
+    );
+   }catch(Exception $exception){
+    return $exception;
+   }
   }
 }
