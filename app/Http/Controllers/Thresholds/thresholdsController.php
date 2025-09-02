@@ -89,6 +89,7 @@ class thresholdsController extends Controller
             $threshold = thresholds::where('sensor_name', $request->sensor_name)->get('id');
 
             $user = User::where('email', $request->email)->get('id');
+           
             foreach ($threshold as $result) {
                 $thresholdID = $result->id;
             }
@@ -134,7 +135,7 @@ class thresholdsController extends Controller
             if((strpos($exception->getMessage(),'Duplicate entry'))){
             return response()->json(["message" => $request->email." is already define to ".$request->sensor_name." sensor threshold","status"=>"exist"]);
             }else{
-                return response()->json(["message" => $exception->getMessage(), "status" => "406sss"]);
+                return response()->json(["message" => $exception->getMessage(), "status" => "406","line"=>$exception->getLine()]);
 
             }
         }

@@ -11,7 +11,9 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-class SensorDataUpdated implements ShouldBroadcast
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+
+class SensorDataUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     public $temperature;
@@ -39,6 +41,7 @@ class SensorDataUpdated implements ShouldBroadcast
     public function broadcastOn()
     {
         return new Channel('sensor-data');
+     
     }
 
     public function broadcastAs()

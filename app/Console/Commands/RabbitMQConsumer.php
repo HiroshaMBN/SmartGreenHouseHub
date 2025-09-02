@@ -36,7 +36,7 @@ class RabbitMQConsumer extends Command
         // env('RABBITMQ_USERNAME'),
         // env('RABBITMQ_PASSWORD'),
         // env('RABBITMQ_VHOST')
-        '10.128.1.52',
+        '192.168.8.104',
         5672,
         'guest',
         'guest',
@@ -44,13 +44,7 @@ class RabbitMQConsumer extends Command
       );
 
       $channel = $connection->channel();
-      //dht11 queue
-      $channel->queue_declare('sensor/dht11', false, true, false, false);
-      //mq2 queue
-      $channel->queue_declare('sensor/mq2', false, true, false, false);
-      //soil moisture queue
-      $channel->queue_declare('sensor/soil', false, true, false, false);
-      $channel->queue_declare('sensor/ultrasonic', false, true, false, false);
+     
 
       //on off trigger
       // $channel->queue_declare('mqtt-subscription-ESP8266Client-4ff3qos0',false,true,false,false);
@@ -58,79 +52,7 @@ class RabbitMQConsumer extends Command
       echo " [*] Waiting for messages in queue:device_control\n";
 
       // echo " [*] Waiting for messages. To exit press CTRL+C\n";
-      $callback = function ($msg) {
-        $RabbitMqControlInstance = new PublishToMessageToNodemcu();
-
-        // echo ' [x] Received ', $msg->body, "\n";
-        $data = json_decode($msg->body, true);
-        // broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
-        if (isset($data['temperature']) && isset($data['humidity'])) {
-          // Broadcast the event with temperature and humidity data
-          broadcast(new SensorDataUpdated($data['temperature'], $data['humidity']));
-
-          \App\Models\Climate::create([
-            'temperature' => $data['temperature'],
-            'humidity' => $data['humidity'],
-          ]);
-          $tmpCriticalThresholdValue = thresholds::where('sensor_name', 'dht11-tmp')->pluck('critical')->first();
-          $tmpCriticalThresholdIsAutomate = thresholds::where('sensor_name', 'dht11-tmp')->pluck('is_automate')->first();
-          if ($tmpCriticalThresholdIsAutomate == 1) {
-            if ($tmpCriticalThresholdValue <= $data['temperature']) {
-              $RabbitMqControlInstance->exhaustFanAutomated("ON");
-            } else {
-              $RabbitMqControlInstance->exhaustFanAutomated("OFF");
-            }
-          }
-        } else {
-          Log::error('Invalid data received from RabbitMQ: ' . $msg->body);
-        }
-
-
-
-
-        echo "Update climate";
-        // broadcast(new \App\Events\SensorDataReceived($msg->body ));
-      };
-
-      $callback2 = function ($msg2) {
-        // echo ' [x] Received ', $msg2->body, "\n";
-        $data2 = json_decode($msg2->body, true);
-
-        if (isset($data2['Value']) && isset($data2['status'])) {
-          // Broadcast the event with temperature and humidity data
-          broadcast(new AirQualityEvent($data2['Value'], $data2['status']));
-          // broadcast(new SensorDataUpdated($msg->body ));
-        } else {
-          Log::error('Invalid data received from RabbitMQ: ' . $msg2->body);
-        }
-
-
-        Log::error('Data received from RabbitMQ: MQ2 ' . $msg2->body);
-
-        \App\Models\airCondition::create([
-          'value' => $data2['Value'],
-          'status' => $data2['status']
-        ]);
-        echo "Update mq2";
-      };
-
-      $callback3 = function ($msg3) {
-        $data3 = json_decode($msg3->body, true);
-
-        if (isset($data3['Level']) && isset($data3['status'])) {
-          // Broadcast the event with temperature and humidity data
-          broadcast(new soilSensorEvent($data3['Level'], $data3['status']));
-          // broadcast(new SensorDataUpdated($msg->body ));
-          \App\Models\soilMoisture::create([
-            'Level' => $data3['Level'],
-            'status' => $data3['status']
-          ]);
-          echo "Update soil";
-          Log::info('Data received from RabbitMQ: soil ' . $msg3->body);
-        } else {
-          Log::error('Invalid data received from RabbitMQ: ' . $data3->body);
-        }
-      };
+    
 
       $callback4 = function (AMQPMessage $msg) {
         echo " [x] Received: ", $msg->body, "\n";
@@ -138,43 +60,12 @@ class RabbitMQConsumer extends Command
         $msg->ack();
       };
 
-      $callback5 = function ($msg5) {
-        $data = json_decode($msg5->body, true);
-        $RabbitMqControlInstance = new PublishToMessageToNodemcu();
-        if (isset($data['distance'])) {
-        
-          broadcast(new ultrasonicWaterLevel($data['distance']));
-          // broadcast(new SensorDataUpdated($msg->body ));
-          \App\Models\waterLevel::create([
-            'stock' => $data['distance']
-          ]);
-          $tmpCriticalThresholdValue = thresholds::where('sensor_name', 'ultra-sonic')->pluck('critical')->first();
-          $tmpCriticalThresholdIsAutomate = thresholds::where('sensor_name', 'ultra-sonic')->pluck('is_automate')->first();
-          if ($tmpCriticalThresholdIsAutomate == 1) {
-            if ($tmpCriticalThresholdValue <= $data['distance']) {
-              $RabbitMqControlInstance->waterMotorAutomated("ON");
-            } else {
-              $RabbitMqControlInstance->waterMotorAutomated("OFF");
-            }
-          }
-          Log::info('Data received from RabbitMQ: ultrasonic: ' . $data['distance']);
-        } else {
-          Log::error('Invalid data received from RabbitMQ: ' . $data['distance']);
-        }
+   
 
 
-
-        
-        
-        echo "Update ultrasonic";
-      };
-
-      $channel->basic_consume('sensor/dht11', '', false, true, false, false, $callback);
-      $channel->basic_consume('sensor/mq2', '', false, true, false, false, $callback2);
-      $channel->basic_consume('sensor/soil', '', false, true, false, false, $callback3);
       //read message from q to
       $channel->basic_consume('device_control', '', false, false, false, false, $callback4);
-      $channel->basic_consume('sensor/ultrasonic', '', false, true, false, false, $callback5);
+
 
 
       while ($channel->is_consuming()) {
